@@ -1,54 +1,25 @@
 #include "ecef.h"
 #include <Ecore_X.h>
-#include <Evas_GL.h>
 
 #ifndef GL_POLYGON_SMOOTH_HINT
 # define GL_POLYGON_SMOOTH_HINT 0x0C53
 #endif
 
-#ifndef GL_UNSIGNED_INT_8_8_8_8_REV
-# define GL_UNSIGNED_INT_8_8_8_8_REV 0x8367
+
+#ifndef GL_BGR
+#define GL_BGR 0x80E0
 #endif
+#ifndef GL_BGRA
+#define GL_BGRA 0x80E1
+#endif
+#ifndef GL_UNSIGNED_INT_8_8_8_8_REV
+#define GL_UNSIGNED_INT_8_8_8_8_REV 0x8367
+#endif
+
 #define GLERR() do { on_error(__FUNCTION__, __LINE__); } while (0)
 static Eina_Bool render_init_done = EINA_FALSE;
 
-static float texture_vertices[] =
-{
-   1.0,  1.0,
-   0.0,  0.0,
-   1.0,  0.0,
-   1.0,  1.0,
-   0.0,  1.0,
-   0.0,  0.0,
-};
-
-static float screen_vertices[] =
-{
-    1.0,  1.0,  0.0,
-   -1.0, -1.0,  0.0,
-    1.0, -1.0,  0.0,
-    1.0,  1.0,  0.0,
-   -1.0,  1.0,  0.0,
-   -1.0, -1.0,  0.0
-};
-
-static const char vertex_texture[] =
-      "attribute vec2 vTexCoord;\n"
-      "attribute vec3 vPosition;\n"
-      "varying vec2 texcoord;\n"
-      "void main()\n"
-      "{\n"
-      "   texcoord = vTexCoord;\n"
-      "   gl_Position = vec4(vPosition, 0);\n"
-      "}\n";
-
-static const char fragment_texture[] =
-   "varying vec2 texcoord;\n"
-   "uniform sampler2D tex;\n"
-   "void main()\n"
-   "{\n"
-   "gl_FragColor = texture2D(tex, texcoord.xy);"
-   "}\n";
+static void render_image_new(ECef_Client *ec, cef_browser_host_t *host, int w, int h);
 
 void
 on_error(const char *func, int line)
@@ -63,47 +34,18 @@ on_error(const char *func, int line)
 }
 
 static void
-_shader_verify(Evas_GL_API *gl, GLuint shader)
+surface_update(ECef_Client *ec, Browser *b, int w, int h)
 {
-   GLint status;
-   GLsizei len;
-   char buf[4096];
+   Evas_Native_Surface ns = {0};
 
-   gl->glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-   if (!status)
-     {
-        gl->glGetShaderInfoLog(shader, sizeof(buf), &len, buf);
-        fprintf(stderr, "Shader compilation failed:\nFailed with: %s\n", buf);
-     }
-}
+   ns.version = EVAS_NATIVE_SURFACE_VERSION;
+   ns.type = EVAS_NATIVE_SURFACE_OPENGL;
+   ns.data.opengl.texture_id = b->texture_id;
+   ns.data.opengl.format = GL_BGRA;
+   ns.data.opengl.w = w;
+   ns.data.opengl.h = h;
 
-static void
-surface_update(ECef_Client *ec, Evas_Object *i, int w, int h)
-{
-   static Evas_GL_Config cfg =
-   {
-       EVAS_GL_RGBA_8888,
-       EVAS_GL_DEPTH_BIT_8,
-       EVAS_GL_STENCIL_NONE,
-       EVAS_GL_OPTIONS_DIRECT,
-       EVAS_GL_MULTISAMPLE_NONE
-   };
-   Evas_GL_Surface *s, *sprev;
-   Evas_Native_Surface ns;
-   Evas_Object *o;
-
-   o = elm_image_object_get(i);
-   evas_object_image_native_surface_set(o, NULL);
-   evas_gl_make_current(ec->gl, NULL, NULL);
-   s = evas_gl_surface_create(ec->gl, &cfg, w, h);
-   sprev = eina_hash_set(ec->surfaces, &i, s);
-   if (sprev)
-     evas_gl_surface_destroy(ec->gl, sprev);
-   evas_gl_native_surface_get(ec->gl, s, &ns);
-   evas_object_image_native_surface_set(o, &ns);
-   evas_object_image_pixels_dirty_set(o, 1);
-
-   evas_gl_make_current(ec->gl, s, ec->glctx);
+   evas_object_image_native_surface_set(elm_image_object_get(b->img), &ns);
 }
 
 static int
@@ -139,6 +81,78 @@ get_screen_point(cef_render_handler_t *self, cef_browser_t *browser, int viewX, 
 }
 
 static void
+render(Browser *b)
+{
+   struct {
+     float tu, tv;
+     float x, y, z;
+   } static vertices[] = {
+     {0.0f, 1.0f, -1.0f, -1.0f, 0.0f},
+     {1.0f, 1.0f,  1.0f, -1.0f, 0.0f},
+     {1.0f, 0.0f,  1.0f,  1.0f, 0.0f},
+     {0.0f, 0.0f, -1.0f,  1.0f, 0.0f}
+   };
+   int w, h;
+
+   elm_image_object_size_get(b->img, &w, &h);
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GLERR();
+
+   glMatrixMode(GL_MODELVIEW); GLERR();
+   glLoadIdentity(); GLERR();
+
+   // Match GL units to screen coordinates.
+   glViewport(0, 0, w, h); GLERR();
+   glMatrixMode(GL_PROJECTION); GLERR();
+   glLoadIdentity(); GLERR();
+
+   // Draw the background gradient.
+   glPushAttrib(GL_ALL_ATTRIB_BITS); GLERR();
+   // Don't check for errors until glEnd().
+   glBegin(GL_QUADS);
+   glColor4f(1.0, 0.0, 0.0, 1.0);  // red
+   glVertex2f(-1.0, -1.0);
+   glVertex2f(1.0, -1.0);
+   glColor4f(0.0, 0.0, 1.0, 1.0);  // blue
+   glVertex2f(1.0, 1.0);
+   glVertex2f(-1.0, 1.0);
+   glEnd(); GLERR();
+   glPopAttrib(); GLERR();
+
+   // Rotate the view based on the mouse spin.
+   //if (spin_x_ != 0) {
+     //glRotatef(-spin_x_, 1.0f, 0.0f, 0.0f); GLERR();
+   //}
+   //if (spin_y_ != 0) {
+     //glRotatef(-spin_y_, 0.0f, 1.0f, 0.0f); GLERR();
+   //}
+#if 0
+   if (transparent_) {
+     // Alpha blending style. Texture values have premultiplied alpha.
+     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); GLERR();
+
+     // Enable alpha blending.
+     glEnable(GL_BLEND); GLERR();
+   }
+#endif
+   // Enable 2D textures.
+   glEnable(GL_TEXTURE_2D); GLERR();
+
+   // Draw the facets with the texture.
+   glBindTexture(GL_TEXTURE_2D, b->texture_id); GLERR();
+   glInterleavedArrays(GL_T2F_V3F, 0, vertices); GLERR();
+   glDrawArrays(GL_QUADS, 0, 4); GLERR();
+
+   // Disable 2D textures.
+   glDisable(GL_TEXTURE_2D); GLERR();
+#if 0
+   if (transparent_) {
+     // Disable alpha blending.
+     glDisable(GL_BLEND); GLERR();
+   }
+#endif
+}
+
+static void
 paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type_t type,
       size_t dirtyRectsCount, cef_rect_t const *dirtyRects, const void *buffer,
       int width, int height)
@@ -146,66 +160,59 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
    ECef_Client *ec;
    Evas_Object *img, *o;
    size_t r;
+   Browser *b;
    int id;
 
    ec = browser_get_client(browser);
-   id = browser->get_identifier(browser);
-   img = eina_hash_find(ec->browsers, &id);
-   if (!img)
-     {GLERR();
-        img = render_image_new(ec, browser->get_host(browser), width, height);
-        eina_hash_add(ec->browsers, &id, img);
-     }
+   b = browser_get(ec, browser);
+   if (!b->img)
+     render_image_new(ec, browser->get_host(browser), width, height);
+   img = b->img;
    o = elm_image_object_get(img);
    evas_object_image_size_set(o, width, height);
-   evas_object_resize(img, width, height);
-   if (ec->gl)
+   if (ec->gl_avail)
      {
-        Evas_GL_API *gl = evas_gl_api_get(ec->gl);
         Evas_Native_Surface *ns;
-        GLuint u;
-GLERR();
+        int ww, wh;
+
+#if 0
+        if (transparent_) {
+          // Enable alpha blending.
+          glEnable(GL_BLEND); GLERR();
+        }
+#endif
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, b->texture_id);
+        GLERR();
         ns = evas_object_image_native_surface_get(o);GLERR();
-        gl->glViewport(0, 0, width, height);GLERR();
-        gl->glClearColor(0, 0, 0, 1);GLERR();
-        gl->glClear(GL_COLOR_BUFFER_BIT);GLERR();
 
-        gl->glEnable(GL_BLEND);GLERR();
-        gl->glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);GLERR();
-        gl->glEnable(GL_TEXTURE_2D);GLERR();
-        gl->glBindTexture(GL_TEXTURE_2D, ns->data.opengl.texture_id);GLERR();
-        gl->glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, width);GLERR();
+        evas_object_geometry_get(ec->win, NULL, NULL, &ww, &wh);
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, ww);GLERR();
 
-        if ((width != ns->data.opengl.w) || (height != ns->data.opengl.h))
+        if ((width != ns->data.opengl.w) || (height != ns->data.opengl.h) ||
+            ((dirtyRectsCount == 1) && (dirtyRects[0].width == ww) && (dirtyRects[0].height == wh)))
           {
-             surface_update(ec, img, width, height);
-             gl->glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, 0);GLERR();
-             gl->glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, 0);GLERR();
-             gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
-                GL_BGRA_IMG, GL_UNSIGNED_INT_8_8_8_8_REV, buffer);GLERR();
+             glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);GLERR();
+             glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);GLERR();
+             surface_update(ec, b, width, height);
+             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+                GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, buffer);GLERR();
              fprintf(stderr, "NEW ");
           }
         else
           {
              for (r = 0; r < dirtyRectsCount; r++)
                {
-                  gl->glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, dirtyRects[r].x);GLERR();
-                  gl->glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, dirtyRects[r].y);GLERR();
-                  gl->glTexSubImage2D(GL_TEXTURE_2D, 0, dirtyRects[r].x, dirtyRects[r].y, dirtyRects[r].width,
-                                  dirtyRects[r].height, GL_BGRA_IMG, GL_UNSIGNED_INT_8_8_8_8_REV,
+                  glPixelStorei(GL_UNPACK_SKIP_PIXELS, dirtyRects[r].x);GLERR();
+                  glPixelStorei(GL_UNPACK_SKIP_ROWS, dirtyRects[r].y);GLERR();
+                  glTexSubImage2D(GL_TEXTURE_2D, 0, dirtyRects[r].x, dirtyRects[r].y, dirtyRects[r].width,
+                                  dirtyRects[r].height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
                                   buffer);GLERR();
                }
              fprintf(stderr, "UPDATE ");
           }
-        gl->glUseProgram(ec->prog);GLERR();
-        gl->glBindBuffer(GL_ARRAY_BUFFER, ec->vbo[0]);GLERR();
-        gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);GLERR();
-        gl->glEnableVertexAttribArray(0);GLERR();
-
-        gl->glBindBuffer(GL_ARRAY_BUFFER, ec->vbo[1]);GLERR();
-        gl->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);GLERR();
-        gl->glEnableVertexAttribArray(1);GLERR();
-        gl->glDrawElements(GL_TRIANGLES, 4, GL_FLOAT, 0);GLERR();
+        glDisable(GL_TEXTURE_2D);
+        evas_object_image_pixels_dirty_set(o, 1);
      }
    else
      {
@@ -300,6 +307,32 @@ render_image_mouse_move(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Event_M
 }
 
 static void
+render_image_mouse_wheel(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Event_Mouse_Wheel *ev)
+{
+   int x, y, mod, dx, dy;
+   cef_browser_host_t *host;
+   cef_mouse_event_t event;
+
+   host = evas_object_data_get(obj, "browser_host");
+   mod = modifiers_get(ev->modifiers);
+   evas_object_geometry_get(obj, &x, &y, NULL, NULL);
+   event.x = ev->canvas.x - x, event.y = ev->canvas.y - y;
+   event.modifiers = mod;
+   if (evas_pointer_button_down_mask_get(e) & (1 << 0))
+     event.modifiers |= EVENTFLAG_LEFT_MOUSE_BUTTON;
+   if (evas_pointer_button_down_mask_get(e) & (1 << 1))
+     event.modifiers |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
+   if (evas_pointer_button_down_mask_get(e) & (1 << 2))
+     event.modifiers |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
+   dx = 0;
+   if (ev->z < 0)
+     dy = 40;
+   if (ev->z > 0)
+     dy = -40;
+   host->send_mouse_wheel_event(host, &event, dx, dy);
+}
+
+static void
 render_image_mouse_move_out(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Event_Mouse_Out *ev)
 {
    int x, y, mod;
@@ -321,6 +354,16 @@ render_image_mouse_move_out(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Eve
 }
 
 static void
+render_image_del(Browser *b, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
+{
+   ECef_Client *ec;
+
+   ec = browser_get_client(b->browser);
+   if (b->texture_id)
+     glDeleteTextures(1, &b->texture_id);
+}
+
+static void
 render_image_resize(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    cef_browser_host_t *host = data;
@@ -331,80 +374,62 @@ render_image_resize(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *eve
 static void
 render_init(ECef_Client *ec)
 {
-   Evas_GL_API *glapi;
-   const char *p;
-
    if (render_init_done) return;
-   glapi = evas_gl_api_get(ec->gl);
-   glapi->glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);GLERR();
+   glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST); GLERR();
 
-   glapi->glClearColor(0.0f, 0.0f, 0.0f, 1.0f);GLERR();
+   glClearColor(0.0f, 0.0f, 0.0f, 1.0f); GLERR();
 
-   glapi->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);GLERR();
+   // Necessary for non-power-of-2 textures to render correctly.
+   glPixelStorei(GL_UNPACK_ALIGNMENT, 1); GLERR();
 
-   glapi->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);GLERR();
-   glapi->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);GLERR();
-   glapi->glGenBuffers(2, ec->vbo);GLERR();
-   glapi->glBindBuffer(GL_ARRAY_BUFFER, ec->vbo[0]);GLERR();
-   glapi->glBufferData(GL_ARRAY_BUFFER, sizeof(screen_vertices), screen_vertices, GL_STATIC_DRAW);GLERR();
-   glapi->glBindBuffer(GL_ARRAY_BUFFER, ec->vbo[1]);GLERR();
-   glapi->glBufferData(GL_ARRAY_BUFFER, sizeof(texture_vertices), texture_vertices, GL_STATIC_DRAW);GLERR();
-
-   p = vertex_texture;
-   ec->vshader = glapi->glCreateShader(GL_VERTEX_SHADER);GLERR();
-   glapi->glShaderSource(ec->vshader, 1, &p, NULL);GLERR();
-   glapi->glCompileShader(ec->vshader);
-   _shader_verify(glapi, ec->vshader);
-
-   p = fragment_texture;
-   ec->fshader = glapi->glCreateShader(GL_FRAGMENT_SHADER);GLERR();
-   glapi->glShaderSource(ec->fshader, 1, &p, NULL);GLERR();
-   glapi->glCompileShader(ec->fshader);
-   _shader_verify(glapi, ec->fshader);
-   
-
-   ec->prog = glapi->glCreateProgram();GLERR();
-   glapi->glAttachShader(ec->prog, ec->vshader);GLERR();
-   glapi->glAttachShader(ec->prog, ec->fshader);GLERR();
-   glapi->glBindAttribLocation(ec->prog, 0, "vPosition");GLERR();
-   glapi->glBindAttribLocation(ec->prog, 1, "vTexCoord");GLERR();
-   glapi->glLinkProgram(ec->prog);
-   _shader_verify(glapi, ec->prog);
-   if (glapi->glTexEnvf)
-     glapi->glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
    render_init_done = EINA_TRUE;
 }
 
-Evas_Object *
+static void
+render_image_pixels_get(void *d, Evas_Object *obj EINA_UNUSED)
+{
+   render(d);
+}
+
+static void
 render_image_new(ECef_Client *ec, cef_browser_host_t *host, int w, int h)
 {
    Evas_Object *i, *o;
-   Evas_GL *gl = ec->gl;
+   Browser *b;
 
-   i = elm_image_add(ec->win);
+   b = browser_get(ec, host->get_browser(host));
+   b->img = i = elm_image_add(ec->win);
    elm_image_no_scale_set(i, 1);
    elm_image_resizable_set(i, 0, 0);
    elm_image_smooth_set(i, 0);
+   evas_object_resize(i, w, h);
+   if (ec->current_page == b)
+     elm_object_part_content_set(ec->layout, "ecef.swallow.browser", i);
    o = elm_image_object_get(i);
-   evas_object_image_colorspace_set(o, EVAS_COLORSPACE_ARGB8888);
-   if (!gl)
-     ec->gl = gl = evas_gl_new(evas_object_evas_get(ec->win));
-   if (!ec->glctx)
-     ec->glctx = evas_gl_context_create(gl, NULL);
-   if (gl)
-     {GLERR();
-        surface_update(ec, i, w, h);
+   if (ec->gl_avail)
+     {
+        GLERR();
         if (!render_init_done)
           render_init(ec);
+        // Create the texture.
+        glGenTextures(1, &b->texture_id); GLERR();
+
+        glBindTexture(GL_TEXTURE_2D, b->texture_id); GLERR();
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                        GL_NEAREST); GLERR();
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                        GL_NEAREST); GLERR();
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); GLERR();
+
+        surface_update(ec, b, w, h);
+        evas_object_image_pixels_get_callback_set(o, render_image_pixels_get, b);
      }
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_DOWN, (Evas_Object_Event_Cb)render_image_mouse_down, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_UP, (Evas_Object_Event_Cb)render_image_mouse_up, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_MOVE, (Evas_Object_Event_Cb)render_image_mouse_move, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_OUT, (Evas_Object_Event_Cb)render_image_mouse_move_out, ec);
-   evas_object_event_callback_add(ec->win, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)render_image_resize, host);
-   EXPAND(i);
-   FILL(i);
+   evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_WHEEL, (Evas_Object_Event_Cb)render_image_mouse_wheel, ec);
+   evas_object_event_callback_add(i, EVAS_CALLBACK_DEL, (Evas_Object_Event_Cb)render_image_del, b);
    evas_object_show(i);
    evas_object_data_set(i, "browser_host", host);
-   return i;
 }

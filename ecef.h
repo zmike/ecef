@@ -5,11 +5,18 @@
 //#define CEF_CALLBACK
 //#define CEF_EXPORT __attribute__((weak))
 
+#define _EVAS_GL_H
+typedef void Evas_GL;
+typedef void Evas_GL_Context;
+typedef void Evas_GL_API;
+typedef int Evas_GL_Context_Version;
+#include <GL/gl.h>
 #include <Elementary.h>
 #include "include/capi/cef_base_capi.h"
 #include "include/capi/cef_browser_capi.h"
 #include "include/capi/cef_client_capi.h"
 #include "include/capi/cef_render_handler_capi.h"
+#include "include/capi/cef_render_process_handler_capi.h"
 #include "include/capi/cef_display_handler_capi.h"
 
 #define WEIGHT evas_object_size_hint_weight_set
@@ -84,29 +91,44 @@ cef_new(size_t size, void **ptr)
    return base;
 }
 
+typedef struct Browser
+{
+   cef_browser_t *browser;
+   Evas_Object *img;
+   Eina_Stringshare *title;
+   Elm_Object_Item *it;
+   GLuint texture_id;
+} Browser;
+
 typedef struct ECef_Client
 {
    cef_client_t client;
    Evas_Object *win;
+   Evas_Object *layout;
+   Evas_Object *pagelist;
+   Browser *current_page;
    Eina_Hash *browsers;
    Eina_Hash *surfaces;
    cef_render_handler_t *render_handler;
    cef_display_handler_t *display_handler;
-   Evas_GL *gl;
-   Evas_GL_Context *glctx;
-   GLuint vbo[2]; //flip image
-   GLuint vshader;
-   GLuint fshader;
-   GLuint prog;
+   cef_window_info_t *window_info;
+   cef_browser_settings_t *browser_settings;
+   Eina_Bool gl_avail : 1;
 } ECef_Client;
+
 
 cef_render_handler_t *client_render_handler_get(cef_client_t *client);
 cef_display_handler_t *client_display_handler_get(cef_client_t *client);
-Evas_Object *render_image_new(ECef_Client *client, cef_browser_host_t *host, int w, int h);
+
+static inline cef_browser_host_t *
+browser_get_host(cef_browser_t *browser)
+{
+   return browser->get_host(browser);
+}
 static inline ECef_Client *
 browser_get_client(cef_browser_t *browser)
 {
-   return (void*)browser->get_host(browser)->get_client(browser->get_host(browser));
+   return (void*)browser_get_host(browser)->get_client(browser_get_host(browser));
 }
 
 static inline int
@@ -122,3 +144,8 @@ modifiers_get(Evas_Modifier *m) {
     modifiers |= EVENTFLAG_ALT_DOWN;
   return modifiers;
 }
+
+void on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_t *browser);
+void browser_new(ECef_Client *ec, const char *url);
+Browser *browser_get(ECef_Client *ec, cef_browser_t *browser);
+void browser_set(ECef_Client *ec, Browser *b);

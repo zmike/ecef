@@ -13,46 +13,17 @@ timer(void *d EINA_UNUSED)
    return EINA_TRUE;
 }
 
-static void
-on_browser_created(cef_render_process_handler_t *self, cef_browser_t *browser)
-{
-   ECef_Client *ec = browser_get_client(browser);
-   int id;
 
-   id = browser->get_identifier(browser);
-   //eina_hash_add(ec->browsers, &id, render_image_new(ec, browser->get_host(browser)));
+static cef_life_span_handler_t *
+client_life_span_handler_get(cef_client_t *client EINA_UNUSED)
+{
+   cef_life_span_handler_t *lsh;
+
+   lsh = CEF_NEW(cef_life_span_handler_t);
+   lsh->on_after_created = on_after_browser_created;
+   return lsh;
 }
 
-static void
-on_browser_destroyed(cef_render_process_handler_t *self, cef_browser_t *browser)
-{
-   ECef_Client *ec = browser_get_client(browser);
-   Eina_Iterator *it;
-   Evas_Object *i;
-   int id;
-
-   id = browser->get_identifier(browser);
-   eina_hash_del_by_key(ec->browsers, &id);
-   if (eina_hash_population(ec->browsers) != 1) return;
-   it = eina_hash_iterator_data_new(ec->browsers);
-   EINA_ITERATOR_FOREACH(it, i)
-     {
-        elm_win_resize_object_del(ec->win, i);
-        elm_win_resize_object_add(ec->win, i);
-     }
-   eina_iterator_free(it);
-}
-
-static cef_render_process_handler_t *
-get_render_process_handler(cef_app_t *app)
-{
-   cef_render_process_handler_t *rph;
-
-   rph = CEF_NEW(cef_render_process_handler_t);
-   //rph->on_browser_created = on_browser_created;
-   rph->on_browser_destroyed = on_browser_destroyed;
-   return rph;
-}
 
 int
 main(int argc, char *argv[])
@@ -65,7 +36,6 @@ main(int argc, char *argv[])
    cef_browser_settings_t browser_settings;
    int ex;
    Evas_Object *win;
-   cef_string_utf16_t *url;
    ECef_Client *ec;
 
    eina_init();
@@ -79,33 +49,59 @@ main(int argc, char *argv[])
    settings.size = sizeof(cef_settings_t);
    settings.windowless_rendering_enabled = 1;
    browser_settings.size = sizeof(cef_browser_settings_t);
-   app->get_render_process_handler = get_render_process_handler;
    if (!cef_initialize(&args, &settings, app, NULL))
      return -1;
-   window_info.windowless_rendering_enabled = 1;
    window_info.width = 640;
    window_info.height = 480;
    client = CEF_NEW(ECef_Client);
    ec = (void*)client;
    client->get_render_handler = client_render_handler_get;
    client->get_display_handler = client_display_handler_get;
-   ec->browsers = eina_hash_int32_new((Eina_Free_Cb)evas_object_del);
-   ec->surfaces = eina_hash_pointer_new(NULL);
+   client->get_life_span_handler = client_life_span_handler_get;
+   ec->browsers = eina_hash_int32_new(NULL);
+   ec->browser_settings = &browser_settings;
+   ec->window_info = &window_info;
 
    elm_init(argc, (char**)argv);
+   elm_theme_overlay_add(NULL, "./ecef.edj");
    ecore_main_loop_glib_integrate();
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
    ec->win = win = elm_win_util_standard_add("ecef", "Loading");
    elm_win_autodel_set(win, 1);
+
+   ec->layout = elm_layout_add(win);
+   EXPAND(ec->layout);
+   FILL(ec->layout);
+   elm_win_resize_object_add(win, ec->layout);
+   elm_layout_theme_set(ec->layout, "layout", "ecef", "base");
+   evas_object_show(ec->layout);
+
+   ec->pagelist = elm_genlist_add(win);
+   //evas_object_smart_callback_add(o, "longpressed", queue_list_item_longpress, NULL);
+   //evas_object_event_callback_add(o, EVAS_CALLBACK_MOUSE_DOWN, queue_list_item_click, NULL);
+   //evas_object_smart_callback_add(o, "realized", queue_list_item_realize, NULL);
+   //evas_object_smart_callback_add(o, "unrealized", queue_list_item_unrealize, NULL);
+   //evas_object_smart_callback_add(o, "unselected", queue_list_item_unselect, NULL);
+   //evas_object_smart_callback_add(o, "clicked,double", queue_list_double_click, NULL);
+   //evas_object_smart_callback_add(o, "scroll,anim,stop", queue_list_scroll_stop, NULL);
+   //evas_object_event_callback_add(o, EVAS_CALLBACK_KEY_DOWN, queue_list_key_down, NULL);
+   elm_genlist_multi_select_mode_set(ec->pagelist, ELM_OBJECT_MULTI_SELECT_MODE_DEFAULT);
+   elm_genlist_homogeneous_set(ec->pagelist, EINA_TRUE);
+   elm_genlist_multi_select_set(ec->pagelist, 1);
+   elm_scroller_bounce_set(ec->pagelist, 0, 0);
+   elm_scroller_policy_set(ec->pagelist, ELM_SCROLLER_POLICY_AUTO, ELM_SCROLLER_POLICY_AUTO);
+   elm_genlist_mode_set(ec->pagelist, ELM_LIST_COMPRESS);
+   elm_object_part_content_set(ec->layout, "ecef.swallow.pagelist", ec->pagelist);
+
    evas_object_show(win);
    evas_object_resize(win, 640, 480);
-   elm_win_render(win);
+   ec->gl_avail = !!strstr(ecore_evas_engine_name_get(ecore_evas_ecore_evas_get(evas_object_evas_get(win))), "gl");
+   window_info.windowless_rendering_enabled = 1;
+   if (ec->gl_avail)
+     ec->surfaces = eina_hash_pointer_new(NULL);
 
    window_info.parent_window = elm_win_window_id_get(win);
-
-   url = cef_string_userfree_utf16_alloc();
-   cef_string_utf8_to_utf16("www.mozilla.org", sizeof("www.mozilla.org") - 1, url);
-   cef_browser_host_create_browser(&window_info, client, url, &browser_settings, NULL);
+   browser_new(ec, "www.mozilla.org");
 
    ecore_timer_add(0.3, timer, NULL);
    ecore_main_loop_begin();

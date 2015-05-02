@@ -1,0 +1,19 @@
+collections {
+   group { "elm/layout/ecef/base"; nomouse;
+      parts {
+         rect { "base";
+            desc { color: 0 0 0 255; }
+         }
+         swallow { "ecef.swallow.browser"; mouse; }
+         swallow { "ecef.swallow.pagelist"; mouse;
+            desc { hid; align: 0 0;
+               rel1.relative: -1 0;
+               rel2.relative: 0 1;
+            }
+            desc { "visible"; align: 0 0;
+               rel2.relative: 0.3 1;
+            }
+         }
+      }
+   }
+}
