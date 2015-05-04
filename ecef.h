@@ -93,12 +93,12 @@ typedef struct Browser
    cef_browser_t *browser;
    Evas_Object *img;
    Eina_Stringshare *title;
-#ifdef RENDER_HANDLER_GL
-   void *it;
-#else
    Elm_Object_Item *it;
-#endif
+   GLuint program;
+   GLuint vao;
+   GLuint vbo;
    GLuint texture_id;
+   void *buffer;
 } Browser;
 
 typedef struct ECef_Client
