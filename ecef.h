@@ -5,13 +5,10 @@
 //#define CEF_CALLBACK
 //#define CEF_EXPORT __attribute__((weak))
 
-#define _EVAS_GL_H
-typedef void Evas_GL;
-typedef void Evas_GL_Context;
-typedef void Evas_GL_API;
-typedef int Evas_GL_Context_Version;
-#include <GL/gl.h>
+#ifndef RENDER_HANDLER_GL
 #include <Elementary.h>
+#endif
+#include <Evas.h>
 #include "include/capi/cef_base_capi.h"
 #include "include/capi/cef_browser_capi.h"
 #include "include/capi/cef_client_capi.h"
@@ -96,7 +93,11 @@ typedef struct Browser
    cef_browser_t *browser;
    Evas_Object *img;
    Eina_Stringshare *title;
+#ifdef RENDER_HANDLER_GL
+   void *it;
+#else
    Elm_Object_Item *it;
+#endif
    GLuint texture_id;
 } Browser;
 

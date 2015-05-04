@@ -40,7 +40,6 @@ on_title_change(cef_display_handler_t *self, cef_browser_t *browser, const cef_s
    ECef_Client *ec;
    cef_string_utf8_t u8 = {0};
    Browser *b;
-   int id;
 
    ec = browser_get_client(browser);
    b = browser_get(ec, browser);
