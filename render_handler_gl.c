@@ -4,21 +4,23 @@
 
 
 static const char *frag_shader = \
+"#version 300 es\n" \
 "precision mediump float;\n" \
-"vec2 Texcoord;\n" \
-"vec4 outputColor;\n" \
+"in vec2 Texcoord;\n" \
+"out vec4 fragColor;\n" \
 "uniform sampler2D tex;\n" \
 "void main() {\n" \
-"  outputColor = texture2D(tex, Texcoord);\n" \
-"  if (outputColor.a < 0.1)\n" \
+"  fragColor = texture2D(tex, Texcoord);\n" \
+"  if (fragColor.a < 0.1)\n" \
 "  {\n" \
 "    discard;\n" \
 "  }\n" \
 "}";
 
 static const char *vert_shader = \
-"vec2 position;\n" \
-"vec2 Texcoord;\n" \
+"#version 300 es\n" \
+"in vec2 position;\n" \
+"out vec2 Texcoord;\n" \
 "void main() {\n" \
 "  Texcoord = (vec2(position.x + 1.0f, position.y - 1.0f) * 0.5);\n" \
 "  Texcoord.y *= -1.0f;\n" \
@@ -49,35 +51,7 @@ render_gl(Browser *b, int w, int h)
 
 GLERR();
    gl = elm_glview_gl_api_get(b->img);GLERR();
-   gl->glBindTexture(GL_TEXTURE_2D, b->texture_id);GLERR();
-  
-   //if ((width != gw) || (height != gh) ||
-       //((dirtyRectsCount == 1) && (dirtyRects[0].width == ww) && (dirtyRects[0].height == wh)))
-     //{
-        elm_glview_current_set(b->img, EINA_TRUE);GLERR();
-        gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, b->buffer);
-        GLERR();
-        fprintf(stderr, "NEW ");
-     //}
-   //else
-     //{
-        //for (r = 0; r < dirtyRectsCount; r++)
-          //{
-             //gl->glPixelStorei(GL_UNPACK_SKIP_PIXELS, dirtyRects[r].x);GLERR();
-             //gl->glPixelStorei(GL_UNPACK_SKIP_ROWS, dirtyRects[r].y);GLERR();
-             //gl->glTexSubImage2D(GL_TEXTURE_2D, 0, dirtyRects[r].x, dirtyRects[r].y, dirtyRects[r].width,
-                             //dirtyRects[r].height, GL_BGRA_EXT, GL_UNSIGNED_INT_8_8_8_8_REV,
-                             //buffer);GLERR();
-          //}
-        //fprintf(stderr, "UPDATE ");
-     //}
 
-   gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);GLERR();
-   gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);GLERR();
-   gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);GLERR();
-   gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);GLERR();
-
-   gl->glBindTexture(GL_TEXTURE_2D, 0);GLERR();
    gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);GLERR();
    gl->glUseProgram(b->program);GLERR();
    gl->glBindVertexArray(b->vao);GLERR();
@@ -98,16 +72,41 @@ paint_gl(ECef_Client *ec, Browser *b, cef_paint_element_type_t type,
    size_t r;
    Evas_GL_API *gl;
 
-   //elm_glview_current_set(b->img, EINA_TRUE);GLERR();
-   //gl = elm_glview_gl_api_get(b->img);GLERR();
-   //elm_glview_size_get(b->img, &gw, &gh);GLERR();
+   elm_glview_current_set(b->img, EINA_TRUE);GLERR();
+   gl = elm_glview_gl_api_get(b->img);GLERR();
+   elm_glview_size_get(b->img, &gw, &gh);GLERR();
+   gl->glBindTexture(GL_TEXTURE_2D, b->texture_id);GLERR();
 
    evas_object_geometry_get(ec->win, NULL, NULL, &ww, &wh);
    elm_glview_size_set(b->img, width, height);GLERR();
-   b->buffer = buffer;
+   if ((width != gw) || (height != gh) ||
+       ((dirtyRectsCount == 1) && (dirtyRects[0].width == ww) && (dirtyRects[0].height == wh)))
+     {
+        elm_glview_current_set(b->img, EINA_TRUE);GLERR();
+        gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, buffer);
+        GLERR();
+        fprintf(stderr, "NEW ");
+     }
+   //else
+     //{
+        //for (r = 0; r < dirtyRectsCount; r++)
+          //{
+             //gl->glPixelStorei(GL_UNPACK_SKIP_PIXELS, dirtyRects[r].x);GLERR();
+             //gl->glPixelStorei(GL_UNPACK_SKIP_ROWS, dirtyRects[r].y);GLERR();
+             //gl->glTexSubImage2D(GL_TEXTURE_2D, 0, dirtyRects[r].x, dirtyRects[r].y, dirtyRects[r].width,
+                             //dirtyRects[r].height, GL_BGRA_EXT, GL_UNSIGNED_INT_8_8_8_8_REV,
+                             //buffer);GLERR();
+          //}
+        //fprintf(stderr, "UPDATE ");
+     //}
+
+   gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);GLERR();
+   gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);GLERR();
+   gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);GLERR();
+   gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);GLERR();
 
 
-   //elm_glview_current_set(b->img, EINA_FALSE);
+   elm_glview_current_set(b->img, EINA_FALSE);
    elm_glview_changed_set(b->img);
 }
 
