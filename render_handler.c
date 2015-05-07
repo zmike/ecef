@@ -53,7 +53,7 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
    if (!b->img)
      render_image_new(ec, browser->get_host(browser), width, height);
    img = b->img;
-   if (ec->gl_avail)
+   if (gl_avail)
      paint_gl(ec, b, type, dirtyRectsCount, dirtyRects, buffer, width, height);
    else
      {
@@ -211,10 +211,10 @@ render_image_new(ECef_Client *ec, cef_browser_host_t *host, int w, int h)
    Browser *b;
 
    b = browser_get(ec, host->get_browser(host));
-   if (ec->gl_avail)
+   if (gl_avail)
      {
         b->img = i = elm_glview_version_add(ec->win, EVAS_GL_GLES_3_X);
-        if (!i) ec->gl_avail = 0;
+        if (!i) gl_avail = 0;
      }
    if (!b->img)
      b->img = i = elm_image_add(ec->win);
@@ -223,7 +223,7 @@ render_image_new(ECef_Client *ec, cef_browser_host_t *host, int w, int h)
    evas_object_data_set(i, "Browser", b);
    if (ec->current_page == b)
      elm_object_part_content_set(ec->layout, "ecef.swallow.browser", i);
-   if (ec->gl_avail)
+   if (gl_avail)
      render_image_gl_setup(b, w, h);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_DOWN, (Evas_Object_Event_Cb)render_image_mouse_down, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_UP, (Evas_Object_Event_Cb)render_image_mouse_up, ec);

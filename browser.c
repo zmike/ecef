@@ -1,4 +1,5 @@
 #include "ecef.h"
+#include <Ecore_X.h>
 
 static char *
 browser_page_text_get(Browser *b, Evas_Object *obj EINA_UNUSED, const char *part)
@@ -72,18 +73,33 @@ browser_new(ECef_Client *ec, const char *url)
 void
 browser_set(ECef_Client *ec, Browser *b)
 {
+   cef_browser_host_t *host;
+   int x, y, w, h;
+   Ecore_X_Window_State state[1];
+
    elm_object_part_content_unset(ec->layout, "ecef.swallow.browser");
    if (ec->current_page)
      {
-        cef_browser_host_t *host;
-
+        state[0] = ECORE_X_WINDOW_STATE_HIDDEN;
         if (ec->current_page->img)
           evas_object_hide(ec->current_page->img);
         host = browser_get_host(ec->current_page->browser);
         host->set_focus(host, 0);
+        if (!gl_avail)
+          {
+             ecore_x_window_hide(host->get_window_handle(host));
+             ecore_x_netwm_window_state_set(host->get_window_handle(host), state, 1);
+          }
      }
    ec->current_page = b;
    if (b->img)
      elm_object_part_content_set(ec->layout, "ecef.swallow.browser", b->img);
    elm_win_title_set(ec->win, b->title);
+   host = browser_get_host(ec->current_page->browser);
+   host->set_focus(host, 1);
+   if (gl_avail) return;
+   edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.swallow.browser", &x, &y, &w, &h);
+   ecore_x_window_move(host->get_window_handle(host), x, y);
+   ecore_x_window_show(host->get_window_handle(host));
+   ecore_x_netwm_window_state_set(host->get_window_handle(host), state, 0);
 }

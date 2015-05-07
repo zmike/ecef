@@ -1,7 +1,8 @@
-//#define RENDER_HANDLER_GL
-//#include <GL/gl.h>
 #include "ecef.h"
 
+/* references some code from https://github.com/andmcgregor/cefgui
+ * http://creativecommons.org/licenses/by/4.0/
+ */
 
 static const char *frag_shader = \
 "#version 300 es\n" \

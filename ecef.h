@@ -114,7 +114,6 @@ typedef struct ECef_Client
    cef_display_handler_t *display_handler;
    cef_window_info_t *window_info;
    cef_browser_settings_t *browser_settings;
-   Eina_Bool gl_avail : 1;
 } ECef_Client;
 
 
@@ -150,3 +149,6 @@ void on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_bro
 void browser_new(ECef_Client *ec, const char *url);
 Browser *browser_get(ECef_Client *ec, cef_browser_t *browser);
 void browser_set(ECef_Client *ec, Browser *b);
+
+extern Eina_Bool servo;
+extern Eina_Bool gl_avail;
