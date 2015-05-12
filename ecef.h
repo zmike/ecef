@@ -5,10 +5,6 @@
 //#define CEF_CALLBACK
 //#define CEF_EXPORT __attribute__((weak))
 
-#ifndef RENDER_HANDLER_GL
-#include <Elementary.h>
-#endif
-#include <Evas.h>
 #include "include/capi/cef_base_capi.h"
 #include "include/capi/cef_browser_capi.h"
 #include "include/capi/cef_client_capi.h"
@@ -16,11 +12,14 @@
 #include "include/capi/cef_render_process_handler_capi.h"
 #include "include/capi/cef_display_handler_capi.h"
 
+#ifndef TEST_APP
+#include <Elementary.h>
+#include <Evas.h>
 #define WEIGHT evas_object_size_hint_weight_set
 #define ALIGN evas_object_size_hint_align_set
 #define EXPAND(X) WEIGHT((X), EVAS_HINT_EXPAND, EVAS_HINT_EXPAND)
 #define FILL(X) ALIGN((X), EVAS_HINT_FILL, EVAS_HINT_FILL)
-
+#endif
 typedef struct Ref
 {
    unsigned int count;
@@ -87,7 +86,7 @@ cef_new(size_t size, void **ptr)
 
    return base;
 }
-
+#ifndef TEST_APP
 typedef struct Browser
 {
    cef_browser_t *browser;
@@ -152,3 +151,4 @@ void browser_set(ECef_Client *ec, Browser *b);
 
 extern Eina_Bool servo;
 extern Eina_Bool gl_avail;
+#endif
