@@ -2,6 +2,7 @@
 #include <dlfcn.h>
 #include "include/capi/cef_app_capi.h"
 #include "include/capi/cef_client_capi.h"
+#include <Ecore_X.h>
 
 #define CEF_STRING(VAR, STRING) \
    (VAR) = cef_string_userfree_utf8_alloc(); \
@@ -13,6 +14,7 @@ Eina_Bool gl_avail;
 static Eina_Bool
 timer(void *d EINA_UNUSED)
 {
+   //fprintf(stderr, "TIMER\n");
    cef_do_message_loop_work();
    return EINA_TRUE;
 }
@@ -28,6 +30,14 @@ client_life_span_handler_get(cef_client_t *client EINA_UNUSED)
    return lsh;
 }
 
+static void
+layout_resize(void *data, Evas *e, Evas_Object *obj, void *event_info)
+{
+   int w, h;
+
+   evas_object_geometry_get(obj, NULL, NULL, &w, &h);
+   printf("%dx%d\n", w, h);
+}
 
 int
 main(int argc, char *argv[])
@@ -52,14 +62,9 @@ main(int argc, char *argv[])
      return ex;
 
    eldbus_init();
-   elm_init(argc, (char**)argv);
-   elm_theme_overlay_add(NULL, "./ecef.edj");
    ecore_main_loop_glib_integrate();
-   elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
-   win = elm_win_util_standard_add("ecef", "Loading");
-   elm_win_autodel_set(win, 1);
 
-   gl_avail = !!strstr(ecore_evas_engine_name_get(ecore_evas_ecore_evas_get(evas_object_evas_get(win))), "gl");
+   gl_avail = !getenv("ECEF_WINDOWED");
    memset(&settings, 0, sizeof(cef_settings_t));
    memset(&browser_settings, 0, sizeof(cef_browser_settings_t));
    settings.size = sizeof(cef_settings_t);
@@ -79,13 +84,26 @@ main(int argc, char *argv[])
    ec->browser_settings = &browser_settings;
    ec->window_info = &window_info;
 
+   if (gl_avail)
+     ecore_x_init_from_display(cef_get_xdisplay());
+
+   elm_init(argc, (char**)argv);
+   elm_theme_overlay_add(NULL, "./ecef.edj");
+   elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
+   win = elm_win_util_standard_add("ecef", "Loading");
+   elm_win_autodel_set(win, 1);
+   EXPAND(win);
+   FILL(win);
+
    servo = !!dlsym(NULL, "is_servo");
 
    ec->win = win;
 
    ec->layout = elm_layout_add(win);
+   evas_object_event_callback_add(ec->layout, EVAS_CALLBACK_RESIZE, layout_resize, NULL);
    EXPAND(ec->layout);
    FILL(ec->layout);
+   evas_object_resize(ec->layout, 640, 480);
    elm_win_resize_object_add(win, ec->layout);
    elm_layout_theme_set(ec->layout, "layout", "ecef", "base");
    evas_object_show(ec->layout);
@@ -110,9 +128,7 @@ main(int argc, char *argv[])
    evas_object_show(win);
    evas_object_resize(win, 640, 480);
    window_info.windowless_rendering_enabled = gl_avail;
-   if (gl_avail)
-     ec->surfaces = eina_hash_pointer_new(NULL);
-   else
+   if (!gl_avail)
      {
         int x, y, w, h;
 
@@ -125,8 +141,8 @@ main(int argc, char *argv[])
    window_info.parent_window = elm_win_window_id_get(win);
    browser_new(ec, "www.mozilla.org");
 
-   //ecore_timer_add(0.01, timer, NULL);
-   cef_run_message_loop();
+   ecore_timer_add(0.01, timer, NULL);
+   ecore_main_loop_begin();
 
    return 0;
 }

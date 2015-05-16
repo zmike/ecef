@@ -11,6 +11,7 @@
 #include "include/capi/cef_render_handler_capi.h"
 #include "include/capi/cef_render_process_handler_capi.h"
 #include "include/capi/cef_display_handler_capi.h"
+#include <assert.h>
 
 #ifndef TEST_APP
 #include <Elementary.h>
@@ -98,6 +99,15 @@ typedef struct Browser
    GLuint vbo;
    GLuint texture_id;
    void *buffer;
+#ifdef HAVE_SERVO
+   Evas_GL *gl;
+   Evas_GL_Context *gl_ctx;
+   Evas_GL_Surface *gl_surf;
+   Evas_GL_Config *gl_cfg;
+   Ecore_Job *gl_init;
+   int pw, ph;
+#endif
+   int w, h;
 } Browser;
 
 typedef struct ECef_Client
@@ -108,7 +118,6 @@ typedef struct ECef_Client
    Evas_Object *pagelist;
    Browser *current_page;
    Eina_Hash *browsers;
-   Eina_Hash *surfaces;
    cef_render_handler_t *render_handler;
    cef_display_handler_t *display_handler;
    cef_window_info_t *window_info;
@@ -148,6 +157,8 @@ void on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_bro
 void browser_new(ECef_Client *ec, const char *url);
 Browser *browser_get(ECef_Client *ec, cef_browser_t *browser);
 void browser_set(ECef_Client *ec, Browser *b);
+
+void render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, int h);
 
 extern Eina_Bool servo;
 extern Eina_Bool gl_avail;

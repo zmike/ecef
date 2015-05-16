@@ -73,7 +73,7 @@ paint_gl(ECef_Client *ec, Browser *b, cef_paint_element_type_t type,
    size_t r;
    Evas_GL_API *gl;
 
-   elm_glview_current_set(b->img, EINA_TRUE);GLERR();
+   //elm_glview_current_set(b->img, EINA_TRUE);GLERR();
    gl = elm_glview_gl_api_get(b->img);GLERR();
    elm_glview_size_get(b->img, &gw, &gh);GLERR();
    gl->glBindTexture(GL_TEXTURE_2D, b->texture_id);GLERR();
@@ -83,7 +83,7 @@ paint_gl(ECef_Client *ec, Browser *b, cef_paint_element_type_t type,
    if ((width != gw) || (height != gh) ||
        ((dirtyRectsCount == 1) && (dirtyRects[0].width == ww) && (dirtyRects[0].height == wh)))
      {
-        elm_glview_current_set(b->img, EINA_TRUE);GLERR();
+        //elm_glview_current_set(b->img, EINA_TRUE);GLERR();
         gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, buffer);
         GLERR();
         fprintf(stderr, "NEW ");
@@ -107,7 +107,7 @@ paint_gl(ECef_Client *ec, Browser *b, cef_paint_element_type_t type,
    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);GLERR();
 
 
-   elm_glview_current_set(b->img, EINA_FALSE);
+   //elm_glview_current_set(b->img, EINA_FALSE);
    elm_glview_changed_set(b->img);
 }
 
@@ -178,10 +178,6 @@ render_image_gl_init(Evas_Object *obj)
    gl->glLinkProgram(program);GLERR();
    gl->glDetachShader(program, vertexShader);GLERR();
    gl->glDetachShader(program, fragmentShader);GLERR();
-
-   //positionLoc = gl->glGetAttribLocation(program, "position");GLERR();
-   //if (positionLoc == -1)
-     //fprintf(stderr, "glGetAttribLocation() failed!\n");
 
    gl->glGenVertexArrays(1, &b->vao);GLERR();
    gl->glBindVertexArray(b->vao);GLERR();

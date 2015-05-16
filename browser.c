@@ -18,6 +18,9 @@ browser_page_del(Browser *b, Evas_Object *obj EINA_UNUSED)
    eina_hash_del_by_key(ec->browsers, &id);
    browser_get_host(b->browser)->close_browser(browser_get_host(b->browser), 0);
    evas_object_del(b->img);
+#ifdef HAVE_SERVO
+   ecore_job_del(b->gl_init);
+#endif
    free(b);
 }
 
@@ -33,12 +36,16 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
       .version = ELM_GENLIST_ITEM_CLASS_VERSION
    };
    ECef_Client *ec = browser_get_client(browser);
-   int id;
+   int id, w, h;
    Browser *b;
+   cef_browser_host_t *host;
 
    id = browser->get_identifier(browser);
+   host = browser_get_host(browser);
    b = calloc(1, sizeof(Browser));
    b->browser = browser;
+   edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.swallow.browser", NULL, NULL, &w, &h);
+   render_image_new(ec, b, host, w, h);
    eina_hash_add(ec->browsers, &id, b);
    b->it = elm_genlist_item_append(ec->pagelist, &browser_itc, b, NULL, ELM_GENLIST_ITEM_NONE, NULL, NULL);
    if (!ec->current_page)
@@ -84,7 +91,7 @@ browser_set(ECef_Client *ec, Browser *b)
         if (ec->current_page->img)
           evas_object_hide(ec->current_page->img);
         host = browser_get_host(ec->current_page->browser);
-        host->set_focus(host, 0);
+        //host->set_focus(host, 0);
         if (!gl_avail)
           {
              ecore_x_window_hide(host->get_window_handle(host));
@@ -96,7 +103,7 @@ browser_set(ECef_Client *ec, Browser *b)
      elm_object_part_content_set(ec->layout, "ecef.swallow.browser", b->img);
    elm_win_title_set(ec->win, b->title);
    host = browser_get_host(ec->current_page->browser);
-   host->set_focus(host, 1);
+   //host->set_focus(host, 1);
    if (gl_avail) return;
    edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.swallow.browser", &x, &y, &w, &h);
    ecore_x_window_move(host->get_window_handle(host), x, y);

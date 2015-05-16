@@ -4,8 +4,11 @@
 
 void render_image_gl_setup(Browser *b, int w, int h);
 void paint_gl(ECef_Client *ec, Browser *b, cef_paint_element_type_t type, size_t dirtyRectsCount, cef_rect_t const *dirtyRects, const void *buffer, int width, int height);
-
-static void render_image_new(ECef_Client *ec, cef_browser_host_t *host, int w, int h);
+#ifdef HAVE_SERVO
+void render_image_servo_paint(Browser *b);
+void render_image_servo_present(cef_render_handler_t *handler, cef_browser_t *browser);
+void render_image_servo_setup(Browser *b, int w, int h);
+#endif
 
 static int
 get_root_screen_rect(cef_render_handler_t *self, cef_browser_t *browser, cef_rect_t *rect)
@@ -17,10 +20,10 @@ get_root_screen_rect(cef_render_handler_t *self, cef_browser_t *browser, cef_rec
 static int
 get_view_rect(cef_render_handler_t *self, cef_browser_t *browser, cef_rect_t *rect)
 {
-   ECef_Client *client;
+   Browser *b;
 
-   client = browser_get_client(browser);
-   evas_object_geometry_get(client->win, &rect->x, &rect->y, &rect->width, &rect->height);
+   b = browser_get(browser_get_client(browser), browser);
+   evas_object_geometry_get(b->img, &rect->x, &rect->y, &rect->width, &rect->height);
    fprintf(stderr, "VIEW RECT: %dx%d\n", rect->width, rect->height);
    return 1;
 }
@@ -50,11 +53,15 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
 
    ec = browser_get_client(browser);
    b = browser_get(ec, browser);
-   if (!b->img)
-     render_image_new(ec, browser->get_host(browser), width, height);
+   b->pw = b->w, b->ph = b->h;
+   b->w = width, b->h = height;
    img = b->img;
    if (gl_avail)
+#ifdef HAVE_SERVO
+     render_image_servo_paint(b);
+#else
      paint_gl(ec, b, type, dirtyRectsCount, dirtyRects, buffer, width, height);
+#endif
    else
      {
         o = elm_image_object_get(img);
@@ -77,6 +84,9 @@ init_handler(ECef_Client *ec)
    render_handler->get_root_screen_rect = get_root_screen_rect;
    render_handler->get_view_rect = get_view_rect;
    render_handler->get_screen_point = get_screen_point;
+#ifdef HAVE_SERVO
+   render_handler->on_present = render_image_servo_present;
+#endif   
 }
 
 cef_render_handler_t *
@@ -200,22 +210,32 @@ static void
 render_image_resize(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    cef_browser_host_t *host = data;
+   int x, y, w, h;
 
-   host->was_resized(host);
+   evas_object_geometry_get(obj, &x, &y, &w, &h);
+   if (gl_avail)
+     host->was_resized(host);
+   else
+     ecore_x_window_move_resize(host->get_window_handle(host), x, y, w, h);
 }
 
-static void
-render_image_new(ECef_Client *ec, cef_browser_host_t *host, int w, int h)
+void
+render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, int h)
 {
    Evas_Object *i;
-   Browser *b;
 
-   b = browser_get(ec, host->get_browser(host));
    if (gl_avail)
      {
-        b->img = i = elm_glview_version_add(ec->win, EVAS_GL_GLES_3_X);
+        b->img = i = elm_glview_version_add(ec->win,
+#ifdef HAVE_SERVO
+        EVAS_GL_GLES_2_X
+#else
+        EVAS_GL_GLES_3_X
+#endif
+        );
         if (!i) gl_avail = 0;
      }
+   b->pw = b->w = w, b->ph = b->h = h;
    if (!b->img)
      b->img = i = elm_image_add(ec->win);
    evas_object_resize(i, w, h);
@@ -224,11 +244,16 @@ render_image_new(ECef_Client *ec, cef_browser_host_t *host, int w, int h)
    if (ec->current_page == b)
      elm_object_part_content_set(ec->layout, "ecef.swallow.browser", i);
    if (gl_avail)
+#ifdef HAVE_SERVO
+     render_image_servo_setup(b, w, h);
+#else
      render_image_gl_setup(b, w, h);
+#endif
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_DOWN, (Evas_Object_Event_Cb)render_image_mouse_down, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_UP, (Evas_Object_Event_Cb)render_image_mouse_up, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_MOVE, (Evas_Object_Event_Cb)render_image_mouse_move, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_OUT, (Evas_Object_Event_Cb)render_image_mouse_move_out, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_WHEEL, (Evas_Object_Event_Cb)render_image_mouse_wheel, ec);
+   evas_object_event_callback_add(i, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)render_image_resize, host);
    evas_object_show(i);
 }
