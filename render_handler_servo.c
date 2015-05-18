@@ -34,6 +34,23 @@ render_image_servo_present(cef_render_handler_t *handler, cef_browser_t *browser
 {
    Browser *b = browser_get(browser_get_client(browser), browser);
    elm_glview_changed_set(b->img);
+   evas_gl_make_current(b->gl, NULL, NULL);
+   fprintf(stderr, "PRESENT\n");
+   //void *buffer = malloc(b->w * b->h * 4);
+   //static Evas_Object *win, *img;
+   //elm_glview_gl_api_get(b->img)->glReadPixels(0, 0, b->w, b->h, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+   //if (!win)
+     //{
+        //win = elm_win_util_standard_add("test", "preview");
+        //img = elm_image_add(win);
+     //}
+   //evas_object_show(win);
+   //evas_object_resize(win, b->w, b->h);
+   //evas_object_resize(img, b->w, b->h);
+   //evas_object_image_size_set(elm_image_object_get(img), b->w, b->h);
+   //evas_object_image_data_set(elm_image_object_get(img), buffer);
+   //free(buffer);
+   //evas_object_show(img);
 }
 
 void

@@ -207,16 +207,26 @@ render_image_mouse_move_out(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Eve
 }
 
 static void
-render_image_resize(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
+render_image_resize(Browser *b, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
-   cef_browser_host_t *host = data;
+   cef_browser_host_t *host;
    int x, y, w, h;
 
-   evas_object_geometry_get(obj, &x, &y, &w, &h);
+   host = browser_get_host(b->browser);
+   evas_object_geometry_get(b->img, &x, &y, &w, &h);
    if (gl_avail)
      host->was_resized(host);
    else
      ecore_x_window_move_resize(host->get_window_handle(host), x, y, w, h);
+}
+
+static void
+render_image_geom(Browser *b, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   int x, y, w, h;
+
+   evas_object_geometry_get(b->img, &x, &y, &w, &h);
+   fprintf(stderr, "IMG GEOM: %d,%d %dx%d\n", x, y, w, h);
 }
 
 void
@@ -254,6 +264,8 @@ render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, i
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_MOVE, (Evas_Object_Event_Cb)render_image_mouse_move, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_OUT, (Evas_Object_Event_Cb)render_image_mouse_move_out, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_WHEEL, (Evas_Object_Event_Cb)render_image_mouse_wheel, ec);
-   evas_object_event_callback_add(i, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)render_image_resize, host);
+   evas_object_event_callback_add(i, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)render_image_resize, b);
+   evas_object_event_callback_add(i, EVAS_CALLBACK_MOVE, (Evas_Object_Event_Cb)render_image_geom, b);
+   evas_object_event_callback_add(i, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)render_image_geom, b);
    evas_object_show(i);
 }

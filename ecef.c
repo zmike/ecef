@@ -30,15 +30,6 @@ client_life_span_handler_get(cef_client_t *client EINA_UNUSED)
    return lsh;
 }
 
-static void
-layout_resize(void *data, Evas *e, Evas_Object *obj, void *event_info)
-{
-   int w, h;
-
-   evas_object_geometry_get(obj, NULL, NULL, &w, &h);
-   printf("%dx%d\n", w, h);
-}
-
 int
 main(int argc, char *argv[])
 {
@@ -91,16 +82,14 @@ main(int argc, char *argv[])
    elm_theme_overlay_add(NULL, "./ecef.edj");
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
    win = elm_win_util_standard_add("ecef", "Loading");
+   evas_object_resize(win, 640, 480);
    elm_win_autodel_set(win, 1);
-   EXPAND(win);
-   FILL(win);
 
    servo = !!dlsym(NULL, "is_servo");
 
    ec->win = win;
 
    ec->layout = elm_layout_add(win);
-   evas_object_event_callback_add(ec->layout, EVAS_CALLBACK_RESIZE, layout_resize, NULL);
    EXPAND(ec->layout);
    FILL(ec->layout);
    evas_object_resize(ec->layout, 640, 480);
@@ -126,7 +115,6 @@ main(int argc, char *argv[])
    elm_object_part_content_set(ec->layout, "ecef.swallow.pagelist", ec->pagelist);
 
    evas_object_show(win);
-   evas_object_resize(win, 640, 480);
    window_info.windowless_rendering_enabled = gl_avail;
    if (!gl_avail)
      {
