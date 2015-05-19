@@ -24,6 +24,8 @@ render_image_servo_init(Evas_Object *obj)
    b->gl = gl = elm_glview_evas_gl_get(b->img);
    b->gl_cfg = evas_gl_config_new();
    b->gl_cfg->color_format = EVAS_GL_RGB_888;
+   b->gl_cfg->depth_bits = EVAS_GL_DEPTH_BIT_24;
+   b->gl_cfg->stencil_bits = EVAS_GL_STENCIL_BIT_8;
    b->gl_surf = evas_gl_surface_create(gl, b->gl_cfg, b->w, b->h);
    b->gl_ctx = evas_gl_context_create(gl, evas_gl_current_context_get(gl));
    b->gl_init = ecore_job_add(render_image_servo_compositing_initialize, b);
@@ -69,9 +71,9 @@ render_image_servo_paint(Browser *b)
 void
 render_image_servo_setup(Browser *b, int w, int h)
 {
-   
-   elm_glview_mode_set(b->img, ELM_GLVIEW_DEPTH);
+   elm_glview_mode_set(b->img, ELM_GLVIEW_DEPTH | ELM_GLVIEW_STENCIL);
    elm_glview_init_func_set(b->img, render_image_servo_init);
+   elm_glview_resize_policy_set(b->img, ELM_GLVIEW_RESIZE_POLICY_SCALE);
    /* force setup of internal render callbacks because glview is a stupid widget */
    elm_glview_render_func_set(b->img, NULL);
    elm_glview_size_set(b->img, w, h);
