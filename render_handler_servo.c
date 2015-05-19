@@ -17,7 +17,6 @@ render_image_servo_present(cef_render_handler_t *handler, cef_browser_t *browser
 {
    Browser *b = browser_get(browser_get_client(browser), browser);
    elm_glview_changed_set(b->img);
-   evas_gl_make_current(b->gl, NULL, NULL);
    fprintf(stderr, "PRESENT\n");
    //void *buffer = malloc(b->w * b->h * 4);
    //static Evas_Object *win, *img;
