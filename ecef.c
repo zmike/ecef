@@ -30,6 +30,30 @@ client_life_span_handler_get(cef_client_t *client EINA_UNUSED)
    return lsh;
 }
 
+#ifdef HAVE_SERVO
+static void
+work_cb()
+{
+   //fprintf(stderr, "WORK %.10f\n", ecore_time_unix_get());
+   cef_do_message_loop_work();
+}
+
+static void
+work_available(cef_browser_process_handler_t *self EINA_UNUSED)
+{
+   ecore_main_loop_thread_safe_call_async(work_cb, NULL);
+}
+
+static cef_browser_process_handler_t *
+browser_process_handler_get(cef_app_t *self EINA_UNUSED)
+{
+   cef_browser_process_handler_t *bph;
+
+   bph = CEF_NEW(cef_browser_process_handler_t);
+   bph->on_work_available = work_available;
+   return bph;
+}
+#endif
 int
 main(int argc, char *argv[])
 {
@@ -47,7 +71,9 @@ main(int argc, char *argv[])
    app = CEF_NEW(cef_app_t);
    cef_addref(app);
    ecore_app_no_system_modules();
-
+#ifdef HAVE_SERVO
+   app->get_browser_process_handler = browser_process_handler_get;
+#endif
    ex = cef_execute_process(&args, app, NULL);
    if (ex >= 0)
      return ex;
@@ -129,7 +155,8 @@ main(int argc, char *argv[])
    window_info.parent_window = elm_win_window_id_get(win);
    browser_new(ec, "www.mozilla.org");
 
-   ecore_timer_add(0.01, timer, NULL);
+   if (!servo)
+     ecore_timer_add(0.01, timer, NULL);
    ecore_main_loop_begin();
 
    return 0;
