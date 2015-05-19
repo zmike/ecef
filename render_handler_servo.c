@@ -50,6 +50,7 @@ void
 render_image_servo_paint(Browser *b)
 {
    elm_glview_size_set(b->img, b->w, b->h);
+   elm_glview_changed_set(b->img);
 }
 
 void
