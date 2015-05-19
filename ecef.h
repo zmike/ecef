@@ -100,11 +100,6 @@ typedef struct Browser
    GLuint texture_id;
    void *buffer;
 #ifdef HAVE_SERVO
-   Evas_GL *gl;
-   Evas_GL_Context *gl_ctx;
-   Evas_GL_Surface *gl_surf;
-   Evas_GL_Config *gl_cfg;
-   Ecore_Job *gl_init;
    int pw, ph;
 #endif
    int w, h;

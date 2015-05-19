@@ -18,9 +18,6 @@ browser_page_del(Browser *b, Evas_Object *obj EINA_UNUSED)
    eina_hash_del_by_key(ec->browsers, &id);
    browser_get_host(b->browser)->close_browser(browser_get_host(b->browser), 0);
    evas_object_del(b->img);
-#ifdef HAVE_SERVO
-   ecore_job_del(b->gl_init);
-#endif
    free(b);
 }
 
