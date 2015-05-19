@@ -85,7 +85,7 @@ main(int argc, char *argv[])
    evas_object_resize(win, 640, 480);
    elm_win_autodel_set(win, 1);
 
-   servo = !!dlsym(NULL, "is_servo");
+   servo = !!dlsym(NULL, "servo_test");
 
    ec->win = win;
 
