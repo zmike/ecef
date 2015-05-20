@@ -1,4 +1,5 @@
 #include "ecef.h"
+#include "include/capi/cef_app_capi.h"
 #include <Ecore_X.h>
 
 int GetControlCharacter(KeyboardCode windows_key_code, int shift);
@@ -128,6 +129,7 @@ render_image_mouse(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Event_Mouse_
    if (evas_pointer_button_down_mask_get(e) & (1 << 2))
      event.modifiers |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
    host->send_mouse_click_event(host, &event, ev->button - 1, up, count);
+   cef_do_message_loop_work();
 }
 
 static void
@@ -161,6 +163,7 @@ render_image_mouse_move(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Event_M
    if (ev->buttons & (1 << 2))
      event.modifiers |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
    host->send_mouse_move_event(host, &event, 0);
+   cef_do_message_loop_work();
 }
 
 static void
@@ -187,6 +190,7 @@ render_image_mouse_wheel(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Event_
    if (ev->z > 0)
      dy = -40;
    host->send_mouse_wheel_event(host, &event, dx, dy);
+   cef_do_message_loop_work();
 }
 
 static void
