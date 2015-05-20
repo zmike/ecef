@@ -10,7 +10,7 @@
 
 Eina_Bool servo;
 Eina_Bool gl_avail;
-
+static Eina_List *handlers;
 static Eina_Bool
 timer(void *d EINA_UNUSED)
 {
@@ -54,6 +54,37 @@ browser_process_handler_get(cef_app_t *self EINA_UNUSED)
    return bph;
 }
 #endif
+
+static Eina_Bool
+key_down()
+{
+   return ECORE_CALLBACK_RENEW;
+}
+
+static Eina_Bool
+mouse_down()
+{
+   return ECORE_CALLBACK_RENEW;
+}
+
+static Eina_Bool
+mouse_up()
+{
+   return ECORE_CALLBACK_RENEW;
+}
+
+static Eina_Bool
+mouse_wheel()
+{
+   return ECORE_CALLBACK_RENEW;
+}
+
+static Eina_Bool
+mouse_move()
+{
+   return ECORE_CALLBACK_RENEW;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -68,6 +99,12 @@ main(int argc, char *argv[])
    ECef_Client *ec;
 
    eina_init();
+   ecore_event_init();
+   E_LIST_HANDLER_APPEND(handlers, ECORE_EVENT_KEY_DOWN, key_down, NULL);
+   E_LIST_HANDLER_APPEND(handlers, ECORE_EVENT_MOUSE_BUTTON_DOWN, mouse_down, NULL);
+   E_LIST_HANDLER_APPEND(handlers, ECORE_EVENT_MOUSE_BUTTON_UP, mouse_up, NULL);
+   E_LIST_HANDLER_APPEND(handlers, ECORE_EVENT_MOUSE_WHEEL, mouse_wheel, NULL);
+   E_LIST_HANDLER_APPEND(handlers, ECORE_EVENT_MOUSE_MOVE, mouse_move, NULL);
    app = CEF_NEW(cef_app_t);
    cef_addref(app);
    ecore_app_no_system_modules();

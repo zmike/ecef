@@ -163,4 +163,14 @@ void render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int
 
 extern Eina_Bool servo;
 extern Eina_Bool gl_avail;
+
+# define E_LIST_HANDLER_APPEND(list, type, callback, data) \
+  do \
+    { \
+       Ecore_Event_Handler *_eh; \
+       _eh = ecore_event_handler_add(type, (Ecore_Event_Handler_Cb)callback, data); \
+       assert(_eh); \
+       list = eina_list_append(list, _eh); \
+    } \
+  while (0)
 #endif
