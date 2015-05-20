@@ -29,7 +29,7 @@ get_view_rect(cef_render_handler_t *self, cef_browser_t *browser, cef_rect_t *re
 
    b = browser_get(browser_get_client(browser), browser);
    evas_object_geometry_get(b->img, &rect->x, &rect->y, &rect->width, &rect->height);
-   fprintf(stderr, "VIEW RECT: %dx%d\n", rect->width, rect->height);
+   //fprintf(stderr, "VIEW RECT: %dx%d\n", rect->width, rect->height);
    return 1;
 }
 
@@ -76,7 +76,7 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
         for (r = 0; r < dirtyRectsCount; r++)
           evas_object_image_data_update_add(o, dirtyRects[r].x, dirtyRects[r].y, dirtyRects[r].width, dirtyRects[r].height);
      }
-   fprintf(stderr, "PAINT %dx%d\n", width, height);
+   //fprintf(stderr, "PAINT %dx%d\n", width, height);
 }
 
 static void
@@ -299,7 +299,7 @@ render_image_geom(Browser *b, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
    int x, y, w, h;
 
    evas_object_geometry_get(b->img, &x, &y, &w, &h);
-   fprintf(stderr, "IMG GEOM: %d,%d %dx%d\n", x, y, w, h);
+   //fprintf(stderr, "IMG GEOM: %d,%d %dx%d\n", x, y, w, h);
 }
 
 void

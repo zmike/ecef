@@ -13,11 +13,10 @@ render_image_servo_init(Evas_Object *obj)
 }
 
 void
-render_image_servo_present(cef_render_handler_t *handler, cef_browser_t *browser)
+render_image_servo_present(cef_render_handler_t *handler EINA_UNUSED, cef_browser_t *browser EINA_UNUSED)
 {
-   Browser *b = browser_get(browser_get_client(browser), browser);
-   elm_glview_changed_set(b->img);
-   fprintf(stderr, "PRESENT\n");
+   //Browser *b = browser_get(browser_get_client(browser), browser);
+   //fprintf(stderr, "SERVO PRESENT %5.5f\n", ecore_loop_time_get());
    //void *buffer = malloc(b->w * b->h * 4);
    //static Evas_Object *win, *img;
    //elm_glview_gl_api_get(b->img)->glReadPixels(0, 0, b->w, b->h, GL_RGB, GL_UNSIGNED_BYTE, buffer);
