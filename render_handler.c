@@ -1,6 +1,10 @@
 #include "ecef.h"
 #include <Ecore_X.h>
 
+int GetControlCharacter(KeyboardCode windows_key_code, int shift);
+KeyboardCode GdkEventToWindowsKeyCode(const Evas_Event_Key_Down* event);
+KeyboardCode GetWindowsKeyCodeWithoutLocation(KeyboardCode key_code);
+KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym);
 
 void render_image_gl_setup(Browser *b, int w, int h);
 void paint_gl(ECef_Client *ec, Browser *b, cef_paint_element_type_t type, size_t dirtyRectsCount, cef_rect_t const *dirtyRects, const void *buffer, int width, int height);
@@ -204,6 +208,71 @@ render_image_mouse_move_out(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Eve
    if (evas_pointer_button_down_mask_get(e) & (1 << 2))
      event.modifiers |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
    host->send_mouse_move_event(host, &event, 1);
+   cef_do_message_loop_work();
+}
+
+static void
+render_image_key(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Event_Key_Down *ev, int up)
+{
+   cef_browser_host_t *host;
+   cef_key_event_t event;
+   KeyboardCode windows_key_code;
+   Eina_Unicode *str;
+
+   host = evas_object_data_get(obj, "browser_host");
+   if (!host) return;
+
+   windows_key_code = GdkEventToWindowsKeyCode(ev);
+   event.windows_key_code = GetWindowsKeyCodeWithoutLocation(windows_key_code);
+
+   event.native_key_code = ev->keycode;
+   event.modifiers = modifiers_get(ev->modifiers);
+   /* ecore, y u no have keycode defines??? */
+   if ((ev->keysym >= 0xff80 /* space */) && (ev->keysym <= 0xffb9 /* kp_9 */))
+     event.modifiers |= EVENTFLAG_IS_KEY_PAD;
+   if (event.modifiers & EVENTFLAG_ALT_DOWN)
+     event.is_system_key = 1;
+
+   if (windows_key_code == VKEY_RETURN)
+      // We need to treat the enter key as a key press of character \r.  This
+      // is apparently just how webkit handles it and what it expects.
+      event.unmodified_character = '\r';
+   else
+     {
+        // FIXME: fix for non BMP chars
+        str = eina_unicode_utf8_to_unicode(ev->string, NULL);
+        event.unmodified_character = *str;
+        free(str);
+     }
+
+   // If ctrl key is pressed down, then control character shall be input.
+   if (event.modifiers & EVENTFLAG_CONTROL_DOWN)
+     event.character = GetControlCharacter(windows_key_code, event.modifiers & EVENTFLAG_SHIFT_DOWN);
+   else
+     event.character = event.unmodified_character;
+
+   if (up)
+     {
+        event.type = KEYEVENT_KEYUP;
+        host->send_key_event(host, &event);
+        event.type = KEYEVENT_CHAR;
+     }
+   else
+     event.type = KEYEVENT_RAWKEYDOWN;
+   host->send_key_event(host, &event);
+   cef_do_message_loop_work();
+}
+
+static void
+render_image_key_down(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Event_Key_Down *ev)
+{
+   render_image_key(ec, e, obj, ev, 0);
+}
+
+static void
+render_image_key_up(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Event_Key_Down *ev)
+{
+   render_image_key(ec, e, obj, ev, 1);
 }
 
 static void
@@ -264,6 +333,8 @@ render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, i
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_MOVE, (Evas_Object_Event_Cb)render_image_mouse_move, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_OUT, (Evas_Object_Event_Cb)render_image_mouse_move_out, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_WHEEL, (Evas_Object_Event_Cb)render_image_mouse_wheel, ec);
+   evas_object_event_callback_add(i, EVAS_CALLBACK_KEY_DOWN, (Evas_Object_Event_Cb)render_image_key_down, ec);
+   evas_object_event_callback_add(i, EVAS_CALLBACK_KEY_UP, (Evas_Object_Event_Cb)render_image_key_up, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)render_image_resize, b);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOVE, (Evas_Object_Event_Cb)render_image_geom, b);
    evas_object_event_callback_add(i, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)render_image_geom, b);
