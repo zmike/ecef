@@ -75,6 +75,33 @@ browser_new(ECef_Client *ec, const char *url)
 }
 
 void
+browser_urlbar_show(ECef_Client *ec, Eina_Bool changed)
+{
+   if (changed)
+     elm_layout_signal_emit(ec->layout, "ecef,urlbar,change", "ecef");
+   else
+     elm_layout_signal_emit(ec->layout, "ecef,urlbar,show", "ecef");
+}
+
+void
+browser_urlbar_hide(ECef_Client *ec)
+{
+   elm_layout_signal_emit(ec->layout, "ecef,urlbar,hide", "ecef");
+}
+
+void
+browser_pagelist_show(ECef_Client *ec)
+{
+   elm_layout_signal_emit(ec->layout, "ecef,pagelist,show", "ecef");
+}
+
+void
+browser_pagelist_hide(ECef_Client *ec)
+{
+   elm_layout_signal_emit(ec->layout, "ecef,pagelist,hide", "ecef");
+}
+
+void
 browser_set(ECef_Client *ec, Browser *b)
 {
    cef_browser_host_t *host;
@@ -99,6 +126,7 @@ browser_set(ECef_Client *ec, Browser *b)
    if (b->img)
      elm_object_part_content_set(ec->layout, "ecef.swallow.browser", b->img);
    elm_win_title_set(ec->win, b->title);
+   elm_entry_entry_set(ec->urlbar, b->url);
    host = browser_get_host(ec->current_page->browser);
    //host->set_focus(host, 1);
    if (gl_avail) return;

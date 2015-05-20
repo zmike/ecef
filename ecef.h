@@ -93,6 +93,7 @@ typedef struct Browser
    cef_browser_t *browser;
    Evas_Object *img;
    Eina_Stringshare *title;
+   Eina_Stringshare *url;
    Elm_Object_Item *it;
    GLuint program;
    GLuint vao;
@@ -111,6 +112,7 @@ typedef struct ECef_Client
    Evas_Object *win;
    Evas_Object *layout;
    Evas_Object *pagelist;
+   Evas_Object *urlbar;
    Browser *current_page;
    Eina_Hash *browsers;
    cef_render_handler_t *render_handler;
@@ -152,6 +154,10 @@ void on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_bro
 void browser_new(ECef_Client *ec, const char *url);
 Browser *browser_get(ECef_Client *ec, cef_browser_t *browser);
 void browser_set(ECef_Client *ec, Browser *b);
+void browser_urlbar_show(ECef_Client *ec, Eina_Bool changed);
+void browser_urlbar_hide(ECef_Client *ec);
+void browser_pagelist_show(ECef_Client *ec);
+void browser_pagelist_hide(ECef_Client *ec);
 
 void render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, int h);
 

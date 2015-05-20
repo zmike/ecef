@@ -1,17 +1,71 @@
 collections {
    group { "elm/layout/ecef/base"; nomouse;
+      images.image: "box_glow.png" COMP;
       parts {
          rect { "base";
             desc { color: 0 0 0 255; }
          }
          swallow { "ecef.swallow.browser"; mouse; }
+         rect { "urlbar_fader";
+            desc {
+               rel1.to_y: "ecef.swallow.urlbar";
+               rel2.to_y: "ecef.swallow.urlbar";
+               color: 0 0 0 192;
+            }
+         }
+         image { "urlbar_border";
+            desc {
+               image.normal: "box_glow.png";
+               fill.smooth: 0;
+               image.border: 12 12 12 12;
+               image.middle: 0;
+               rel1.offset: -7 -8;
+               rel2.offset: 7 7;
+               rel1.to: "ecef.swallow.urlbar";
+               rel2.to: "ecef.swallow.urlbar";
+            }
+         }
+         swallow { "ecef.swallow.urlbar"; mouse;
+            desc { hid; align: 0.5 0;
+               rel1.relative: 1 -0.5;
+               rel2.relative: 0 0;
+               link.base: "ecef,urlbar,hide" "ecef";
+               link.transition: LINEAR 0.2;
+            }
+            desc { "visible"; align: 0.5 0;
+               rel1.relative: 1 0;
+               rel2.relative: 0 0;
+               rel2.offset: -1 30;
+               link.base: "ecef,urlbar,show" "ecef";
+               link.transition: LINEAR 0.2;
+            }
+         }
+         program { signal: "ecef,urlbar,change"; source: "ecef";
+            action: STATE_SET "visible";
+            transition: LINEAR 0.2;
+            target: "ecef.swallow.urlbar";
+            after: "hide_urlbar_delayed";
+         }
+         program { "hide_urlbar_delayed";
+            in: 3.0 0;
+            after: "hide_urlbar";
+         }
+         program { "hide_urlbar";
+            action: STATE_SET "default";
+            transition: LINEAR 0.4;
+            target: "ecef.swallow.urlbar";
+         }
          swallow { "ecef.swallow.pagelist"; mouse;
             desc { hid; align: 0 0;
                rel1.relative: -1 0;
                rel2.relative: 0 1;
+               link.base: "ecef,pagelist,hide" "ecef";
+               link.transition: LINEAR 0.2;
             }
             desc { "visible"; align: 0 0;
                rel2.relative: 0.3 1;
+               link.base: "ecef,pagelist,show" "ecef";
+               link.transition: LINEAR 0.2;
             }
          }
       }

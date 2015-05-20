@@ -30,8 +30,20 @@ static void
 on_address_change(cef_display_handler_t *self, cef_browser_t *browser, cef_frame_t *frame, const cef_string_t *url)
 {
    ECef_Client *ec;
+   cef_string_utf8_t u8 = {0};
+   Browser *b;
 
    ec = browser_get_client(browser);
+   b = browser_get(ec, browser);
+   if (url)
+     cef_string_utf16_to_utf8(url->str, url->length, &u8);
+   eina_stringshare_replace(&b->url, u8.str);
+   cef_string_utf8_clear(&u8);
+   if (ec->current_page == b)
+     {
+        elm_entry_entry_set(ec->urlbar, b->url);
+        browser_urlbar_show(ec, 1);
+     }
 }
 
 static void

@@ -140,6 +140,10 @@ main(int argc, char *argv[])
    elm_genlist_mode_set(ec->pagelist, ELM_LIST_COMPRESS);
    elm_object_part_content_set(ec->layout, "ecef.swallow.pagelist", ec->pagelist);
 
+   ec->urlbar = elm_entry_add(win);
+   elm_entry_single_line_set(ec->urlbar, 1);
+   elm_object_part_content_set(ec->layout, "ecef.swallow.urlbar", ec->urlbar);
+
    evas_object_show(win);
    window_info.windowless_rendering_enabled = gl_avail;
    if (!gl_avail)
