@@ -56,7 +56,7 @@ render_image_servo_paint(Browser *b)
 void
 render_image_servo_setup(Browser *b, int w, int h)
 {
-   elm_glview_mode_set(b->img, ELM_GLVIEW_DEPTH | ELM_GLVIEW_STENCIL);
+   elm_glview_mode_set(b->img, ELM_GLVIEW_DEPTH | ELM_GLVIEW_STENCIL | ELM_GLVIEW_DIRECT);
    elm_glview_init_func_set(b->img, render_image_servo_init);
    //elm_glview_resize_policy_set(b->img, ELM_GLVIEW_RESIZE_POLICY_SCALE);
    /* force setup of internal render callbacks because glview is a stupid widget */
