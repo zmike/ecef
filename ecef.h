@@ -296,6 +296,13 @@ typedef struct Browser
    GLuint texture_id;
    void *buffer;
 #ifdef HAVE_SERVO
+   Evas_GL_Context *glctx;
+   Evas_GL *gl;
+   Evas_GL_Surface *glsfc;
+   Evas_GL_Config *glcfg;
+   Ecore_Job *gljob;
+   GLuint fbo;
+   GLuint tex;
    int pw, ph;
 #endif
    int w, h;
