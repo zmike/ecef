@@ -115,6 +115,20 @@ urlbar_visible(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSE
    elm_object_focus_set(ec->urlbar, 1);
 }
 
+static void
+urlbar_activate(ECef_Client *ec, Evas_Object *obj, void *ev EINA_UNUSED)
+{
+   cef_frame_t *fr;
+   cef_string_t str = {0};
+   Eina_Stringshare *url;
+
+   url = elm_entry_entry_get(obj);
+   cef_string_from_utf8(url, strlen(url), &str);
+   fr = ec->current_page->browser->get_main_frame(ec->current_page->browser);
+   fr->load_url(fr, &str);
+   cef_string_clear(&str);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -213,6 +227,7 @@ main(int argc, char *argv[])
 
    ec->urlbar = elm_entry_add(win);
    elm_entry_single_line_set(ec->urlbar, 1);
+   evas_object_smart_callback_add(ec->urlbar, "activated", (Evas_Smart_Cb)urlbar_activate, ec);
    elm_object_part_content_set(ec->layout, "ecef.swallow.urlbar", ec->urlbar);
 
    evas_object_show(win);
