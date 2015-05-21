@@ -293,6 +293,7 @@ typedef struct Browser
    GLuint program;
    GLuint vao;
    GLuint vbo;
+   GLuint vbo2;
    GLuint texture_id;
    void *buffer;
 #ifdef HAVE_SERVO

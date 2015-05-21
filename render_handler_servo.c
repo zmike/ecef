@@ -27,6 +27,16 @@ static float texture_vertices[] =
    0.0,  0.0,
 };
 
+static float rectangle_fullscreen_vertices[] =
+{
+    1.0,  1.0,  0.0,
+   -1.0, -1.0,  0.0,
+    1.0, -1.0,  0.0,
+    1.0,  1.0,  0.0,
+   -1.0,  1.0,  0.0,
+   -1.0, -1.0,  0.0
+};
+
 /* Vertext Shader Source */
 static const char vertex_shader[] =
       "attribute vec4 vPosition;\n"
@@ -52,50 +62,21 @@ static const char fragment_shader[] =
       "}\n";
 
 static void
-render_image_servo_init_job(Browser *b)
-{
-   Evas_GL_API *api = evas_gl_api_get(b->gl);
-   cef_browser_host_t *host;
-
-   host = browser_get_host(b->browser);
-   if (!evas_gl_make_current(b->gl, NULL, NULL))
-     abort();
-   if (!evas_gl_make_current(b->gl, b->glsfc, b->glctx))
-     abort();
-   api->glGenTextures(1, &b->tex);GLERR;
-
-   api->glBindTexture(GL_TEXTURE_2D, b->tex);GLERR;
-   api->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);GLERR;
-   api->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);GLERR;
-   api->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);GLERR;
-   api->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);GLERR;
-   api->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, b->w, b->h, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);GLERR;
-
-   api->glGenFramebuffers(1, &b->fbo);GLERR;
-   api->glBindFramebuffer(GL_FRAMEBUFFER, b->fbo);GLERR;
-   api->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, b->tex, 0);GLERR;
-
-   host->initialize_compositing(host);GLERR;
-   b->gljob = NULL;
-}
-
-static void
 render_image_servo_init(Evas_Object *obj)
 {
    Browser *b;
    Evas_GL_API *api;
    GLuint vertexShader, fragmentShader, program;
+   cef_browser_host_t *host;
 
    b = evas_object_data_get(obj, "Browser");
+   host = browser_get_host(b->browser);
    b->gl = elm_glview_evas_gl_get(obj);
    api = evas_gl_api_get(b->gl);
    b->glcfg = evas_gl_config_new();
    b->glcfg->color_format = EVAS_GL_RGB_888;
    b->glcfg->depth_bits = EVAS_GL_DEPTH_BIT_24;
    b->glcfg->stencil_bits = EVAS_GL_STENCIL_BIT_8;
-   b->glctx = evas_gl_context_create(b->gl, evas_gl_current_context_get(b->gl));
-   b->glsfc = evas_gl_pbuffer_surface_create(b->gl, b->glcfg, 1, 1, NULL);
-   b->gljob = ecore_job_add((Ecore_Cb)render_image_servo_init_job, b);
 
    vertexShader = shader_compile(api, GL_VERTEX_SHADER, vertex_shader);
    fragmentShader = shader_compile(api, GL_FRAGMENT_SHADER, fragment_shader);
@@ -114,6 +95,30 @@ render_image_servo_init(Evas_Object *obj)
    api->glEnableVertexAttribArray(1);GLERR;
    api->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);GLERR;
    api->glBindBuffer(GL_ARRAY_BUFFER, 0);GLERR;
+
+   api->glGenBuffers(1, &b->vbo2);GLERR;
+   api->glBindBuffer(GL_ARRAY_BUFFER, b->vbo2);GLERR;
+   api->glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle_fullscreen_vertices), rectangle_fullscreen_vertices, GL_STATIC_DRAW);GLERR;
+   api->glEnableVertexAttribArray(1);GLERR;
+   api->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);GLERR;
+   api->glBindBuffer(GL_ARRAY_BUFFER, 0);GLERR;
+
+   api->glGenTextures(1, &b->tex);GLERR;
+
+   api->glBindTexture(GL_TEXTURE_2D, b->tex);GLERR;
+   api->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);GLERR;
+   api->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);GLERR;
+   api->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);GLERR;
+   api->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);GLERR;
+   api->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, b->w, b->h, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);GLERR;
+
+   api->glGenFramebuffers(1, &b->fbo);GLERR;
+   api->glBindFramebuffer(GL_FRAMEBUFFER, b->fbo);GLERR;
+   api->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, b->tex, 0);GLERR;
+
+   host->initialize_compositing(host);GLERR;
+   api->glBindTexture(GL_TEXTURE_2D, 0);GLERR;
+   api->glBindFramebuffer(GL_FRAMEBUFFER, 0);GLERR;
 }
 
 void
@@ -122,10 +127,7 @@ render_image_servo_present(cef_render_handler_t *handler EINA_UNUSED, cef_browse
    Browser *b = browser_get(browser_get_client(browser), browser);
 
 fprintf(stderr, "PRESENT\n");
-   if (!evas_gl_make_current(b->gl, NULL, NULL))
-     abort();
-   elm_glview_size_set(b->img, b->w, b->h);
-   elm_glview_changed_set(b->img);
+
 }
 
 static void
@@ -133,29 +135,11 @@ render_image_servo_render(Evas_Object *obj)
 {
    Browser *b;
    Evas_GL_API *api;
+   cef_browser_host_t *host;
 fprintf(stderr, "RENDER\n");
    b = evas_object_data_get(obj, "Browser");
-   api = evas_gl_api_get(b->gl);
-   api->glClearColor(0.0, 0.0, 1.0, 1.0);GLERR;
-   api->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);GLERR;
-   api->glUseProgram(b->program);GLERR;
-
-   api->glBindBuffer(GL_ARRAY_BUFFER, b->vbo);GLERR;
-   api->glDrawArrays(GL_TRIANGLES, 0, 6);GLERR;
-   api->glBindBuffer(GL_ARRAY_BUFFER, 0);GLERR;
-
-   api->glUseProgram(0);GLERR;
-}
-
-void
-render_image_servo_paint(Browser *b)
-{
-   cef_browser_host_t *host;
-   Evas_GL_API *api = evas_gl_api_get(b->gl);
-fprintf(stderr, "PAINT\n");
    host = browser_get_host(b->browser);
-   if (!evas_gl_make_current(b->gl, b->glsfc, b->glctx))
-     abort();
+   api = evas_gl_api_get(b->gl);
    api->glClearColor(0.0, 1.0, 0.0, 1.0);GLERR;
    if ((b->w != b->pw) || (b->h != b->ph))
      {
@@ -165,6 +149,33 @@ fprintf(stderr, "PAINT\n");
      }
    api->glBindFramebuffer(GL_FRAMEBUFFER, b->fbo);GLERR;
    host->composite(host);
+   api->glBindFramebuffer(GL_FRAMEBUFFER, 0);GLERR;
+
+   api->glViewport(0, 0, b->w, b->h); GLERR;
+   api->glClearColor(0.0, 0.0, 1.0, 1.0); GLERR;
+   api->glClear(GL_COLOR_BUFFER_BIT); GLERR;
+
+   api->glEnable(GL_BLEND); GLERR;
+   api->glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); GLERR;
+   api->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);GLERR;
+   api->glUseProgram(b->program);GLERR;
+
+   api->glBindBuffer(GL_ARRAY_BUFFER, b->vbo2); GLERR;
+   api->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); GLERR;
+   api->glEnableVertexAttribArray(0); GLERR;
+   api->glBindBuffer(GL_ARRAY_BUFFER, b->vbo);GLERR;
+   api->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0); GLERR;
+   api->glEnableVertexAttribArray(1); GLERR;
+   api->glDrawArrays(GL_TRIANGLES, 0, 6);GLERR;
+   api->glBindBuffer(GL_ARRAY_BUFFER, 0);GLERR;
+}
+
+void
+render_image_servo_paint(Browser *b)
+{
+fprintf(stderr, "PAINT\n");
+   elm_glview_size_set(b->img, b->w, b->h);
+   elm_glview_changed_set(b->img);
 }
 
 void
