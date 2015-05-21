@@ -78,7 +78,10 @@ void
 browser_urlbar_show(ECef_Client *ec, Eina_Bool changed)
 {
    if (changed)
-     elm_layout_signal_emit(ec->layout, "ecef,urlbar,change", "ecef");
+     {
+        if (!evas_object_visible_get(ec->urlbar))
+          elm_layout_signal_emit(ec->layout, "ecef,urlbar,change", "ecef");
+     }
    else
      elm_layout_signal_emit(ec->layout, "ecef,urlbar,show", "ecef");
 }
