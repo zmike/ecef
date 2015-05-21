@@ -37,28 +37,26 @@ static float rectangle_fullscreen_vertices[] =
    -1.0, -1.0,  0.0
 };
 
-/* Vertext Shader Source */
-static const char vertex_shader[] =
+static const char vertex_texture[] =
       "attribute vec4 vPosition;\n"
-      "attribute vec3 inColor;\n"
+      "attribute vec2 vTexCoord;\n"
       "uniform mat4 mvpMatrix;"
-      "varying vec3 outColor;\n"
+      "varying vec2 texcoord;\n"
       "void main()\n"
       "{\n"
-      "   outColor = inColor;\n"
       "   gl_Position = mvpMatrix * vPosition;\n"
+      "   texcoord = vTexCoord;\n"
       "}\n";
 
-/* Fragment Shader Source */
-static const char fragment_shader[] =
+static const char fragment_texture[] =
       "#ifdef GL_ES\n"
       "precision mediump float;\n"
       "#endif\n"
-      "varying vec3 outColor;\n"
-      "uniform float alpha;\n"
+      "uniform sampler2D tex;\n"
+      "varying vec2 texcoord;\n"
       "void main()\n"
       "{\n"
-      "   gl_FragColor = alpha * vec4 (outColor, 1.0);\n"
+      "   gl_FragColor = texture2D(tex, texcoord);\n"
       "}\n";
 
 static void
@@ -78,8 +76,8 @@ render_image_servo_init(Evas_Object *obj)
    b->glcfg->depth_bits = EVAS_GL_DEPTH_BIT_24;
    b->glcfg->stencil_bits = EVAS_GL_STENCIL_BIT_8;
 
-   vertexShader = shader_compile(api, GL_VERTEX_SHADER, vertex_shader);
-   fragmentShader = shader_compile(api, GL_FRAGMENT_SHADER, fragment_shader);
+   vertexShader = shader_compile(api, GL_VERTEX_SHADER, vertex_texture);
+   fragmentShader = shader_compile(api, GL_FRAGMENT_SHADER, fragment_texture);
    api->glClearColor(0.0, 0.0, 0.0, 0.0);GLERR;
 
    b->program = program = api->glCreateProgram();GLERR;
@@ -145,19 +143,18 @@ fprintf(stderr, "RENDER\n");
      {
         api->glBindTexture(GL_TEXTURE_2D, b->tex);GLERR;
         api->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, b->w, b->h, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);GLERR;
-        api->glBindTexture(GL_TEXTURE_2D, 0);GLERR;
      }
+   api->glBindTexture(GL_TEXTURE_2D, 0);GLERR;
    api->glBindFramebuffer(GL_FRAMEBUFFER, b->fbo);GLERR;
-   host->composite(host);
+   host->composite(host);GLERR;
    api->glBindFramebuffer(GL_FRAMEBUFFER, 0);GLERR;
 
    api->glViewport(0, 0, b->w, b->h); GLERR;
    api->glClearColor(0.0, 0.0, 1.0, 1.0); GLERR;
-   api->glClear(GL_COLOR_BUFFER_BIT); GLERR;
+   api->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);GLERR;
 
    api->glEnable(GL_BLEND); GLERR;
    api->glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); GLERR;
-   api->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);GLERR;
    api->glUseProgram(b->program);GLERR;
 
    api->glBindBuffer(GL_ARRAY_BUFFER, b->vbo2); GLERR;
@@ -166,6 +163,7 @@ fprintf(stderr, "RENDER\n");
    api->glBindBuffer(GL_ARRAY_BUFFER, b->vbo);GLERR;
    api->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0); GLERR;
    api->glEnableVertexAttribArray(1); GLERR;
+
    api->glDrawArrays(GL_TRIANGLES, 0, 6);GLERR;
    api->glBindBuffer(GL_ARRAY_BUFFER, 0);GLERR;
 }
