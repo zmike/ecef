@@ -128,7 +128,7 @@ render_image_gl_del(Browser *b, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSE
      //glDeleteTextures(1, &b->texture_id);
 }
 
-static GLuint
+GLuint
 shader_compile(Evas_GL_API *gl, GLenum type, const char *str)
 {
    GLint status;
