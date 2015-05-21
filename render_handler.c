@@ -311,11 +311,7 @@ render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, i
    if (gl_avail)
      {
         b->img = i = elm_glview_version_add(ec->win,
-#ifdef HAVE_SERVO
-        EVAS_GL_GLES_2_X
-#else
         EVAS_GL_GLES_3_X
-#endif
         );
         if (!i) gl_avail = 0;
      }

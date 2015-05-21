@@ -36,27 +36,6 @@ static const char fragment_shader[] =
       "   gl_FragColor = alpha * vec4 (outColor, 1.0);\n"
       "}\n";
 
-static const char vertex_texture[] =
-      "attribute vec4 vPosition;\n"
-      "attribute vec2 vTexCoord;\n"
-      "uniform mat4 mvpMatrix;"
-      "varying vec2 texcoord;\n"
-      "void main()\n"
-      "{\n"
-      "   gl_Position = mvpMatrix * vPosition;\n"
-      "   texcoord = vTexCoord;\n"
-      "}\n";
-
-static const char fragment_texture[] =
-      "#ifdef GL_ES\n"
-      "precision mediump float;\n"
-      "#endif\n"
-      "uniform sampler2D tex;\n"
-      "varying vec2 texcoord;\n"
-      "void main()\n"
-      "{\n"
-      "   gl_FragColor = texture2D(tex, texcoord);\n"
-      "}\n";
 static void
 render_image_servo_init_job(Browser *b)
 {
