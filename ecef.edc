@@ -29,21 +29,22 @@ collections {
             desc { hid; align: 0.5 0;
                rel1.relative: 1 -0.5;
                rel2.relative: 0 0;
-               link.base: "ecef,urlbar,hide" "ecef";
-               link.transition: LINEAR 0.2;
             }
             desc { "visible"; align: 0.5 0;
                rel1.relative: 1 0;
                rel2.relative: 0 0;
                rel2.offset: -1 30;
-               link.base: "ecef,urlbar,show" "ecef";
-               link.transition: LINEAR 0.2;
             }
          }
-         program { signal: "ecef,urlbar,change"; source: "ecef";
+         program { "show_urlbar";
+            signal: "ecef,urlbar,show"; source: "ecef";
             action: STATE_SET "visible";
-            transition: LINEAR 0.2;
+            transition: LINEAR 0.4;
             target: "ecef.swallow.urlbar";
+            sequence { action: SIGNAL_EMIT "ecef,urlbar,visible" "ecef"; }
+         }
+         program { signal: "ecef,urlbar,change"; source: "ecef";
+            after: "show_urlbar";
             after: "hide_urlbar_delayed";
          }
          program { "hide_urlbar_delayed";
@@ -51,9 +52,11 @@ collections {
             after: "hide_urlbar";
          }
          program { "hide_urlbar";
+            signal: "ecef,urlbar,hide"; source: "ecef";
             action: STATE_SET "default";
             transition: LINEAR 0.4;
             target: "ecef.swallow.urlbar";
+            sequence { action: SIGNAL_EMIT "ecef,urlbar,hidden" "ecef"; }
          }
          swallow { "ecef.swallow.pagelist"; mouse;
             desc { hid; align: 0 0;

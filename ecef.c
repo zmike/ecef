@@ -107,6 +107,14 @@ mouse_move()
    return ECORE_CALLBACK_RENEW;
 }
 
+static void
+urlbar_visible(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED, const char *src EINA_UNUSED)
+{
+   ECef_Client *ec = d;
+
+   elm_object_focus_set(ec->urlbar, 1);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -183,6 +191,7 @@ main(int argc, char *argv[])
    evas_object_resize(ec->layout, 640, 480);
    elm_win_resize_object_add(win, ec->layout);
    elm_layout_theme_set(ec->layout, "layout", "ecef", "base");
+   elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,visible", "ecef", urlbar_visible, ec);
    evas_object_show(ec->layout);
 
    ec->pagelist = elm_genlist_add(win);
