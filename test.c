@@ -62,12 +62,11 @@ main(int argc, char *argv[])
    window_info.windowless_rendering_enabled = 0;
 
    {
-      cef_string_utf16_t *u;
+      cef_string_utf16_t u = {0};
 
-      u = cef_string_userfree_utf16_alloc();
-      cef_string_utf8_to_utf16("www.mozilla.org", strlen("www.mozilla.org"), u);
-      cef_browser_host_create_browser_sync(&window_info, client, u, &browser_settings, NULL);
-      cef_string_userfree_free(u);
+      cef_string_utf8_to_utf16("www.mozilla.org", strlen("www.mozilla.org"), &u);
+      cef_browser_host_create_browser_sync(&window_info, client, &u, &browser_settings, NULL);
+      cef_string_utf16_clear(&u);
    }
 
    return 0;
