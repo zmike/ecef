@@ -33,7 +33,7 @@ static const char *vert_shader = \
 #endif
 #define GLERR() do { on_error(__FUNCTION__, __LINE__); } while (0)
 
-void
+static void
 on_error(const char *func, int line)
 {
    int _e = glGetError();
