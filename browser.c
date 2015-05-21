@@ -67,11 +67,11 @@ browser_get(ECef_Client *ec, cef_browser_t *browser)
 void
 browser_new(ECef_Client *ec, const char *url)
 {
-   cef_string_utf16_t *u;
+   cef_string_t u = {0};
 
-   u = cef_string_userfree_utf16_alloc();
-   cef_string_utf8_to_utf16(url, strlen(url), u);
-   cef_browser_host_create_browser(ec->window_info, &ec->client, u, ec->browser_settings, NULL);
+   cef_string_from_utf8(url, strlen(url), &u);
+   cef_browser_host_create_browser(ec->window_info, &ec->client, &u, ec->browser_settings, NULL);
+   cef_string_clear(&u);
 }
 
 void
