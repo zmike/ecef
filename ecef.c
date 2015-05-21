@@ -59,9 +59,28 @@ browser_process_handler_get(cef_app_t *self EINA_UNUSED)
 #endif
 
 static Eina_Bool
-key_down()
+key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
 {
-   return ECORE_CALLBACK_RENEW;
+   ECef_Client *ec;
+   Eina_List *l;
+
+   EINA_LIST_FOREACH(clients, l, ec)
+     if (elm_win_window_id_get(ec->win) == ev->window) break;
+   if (!ec) return ECORE_CALLBACK_RENEW;
+   if ((!strcmp(ev->key, "q")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
+     ecore_main_loop_quit();
+   else if ((!strcmp(ev->key, "Escape")) && (!ev->modifiers))
+     {
+        if (elm_object_focus_get(ec->urlbar))
+          browser_urlbar_hide(ec);
+        else
+          return ECORE_CALLBACK_RENEW;
+     }
+   else if ((!strcmp(ev->key, "F8")) && (!ev->modifiers))
+     browser_urlbar_show(ec, 0);
+   else
+     return ECORE_CALLBACK_RENEW;
+   return ECORE_CALLBACK_CANCEL;
 }
 
 static Eina_Bool
