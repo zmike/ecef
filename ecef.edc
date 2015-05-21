@@ -19,8 +19,8 @@ collections {
                fill.smooth: 0;
                image.border: 12 12 12 12;
                image.middle: 0;
-               rel1.offset: -7 -8;
-               rel2.offset: 7 7;
+               rel1.offset: -7 -6;
+               rel2.offset: 7 5;
                rel1.to: "ecef.swallow.urlbar";
                rel2.to: "ecef.swallow.urlbar";
             }
