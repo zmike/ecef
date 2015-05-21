@@ -245,7 +245,8 @@ render_image_key(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Event_Key_Down
      {
         // FIXME: fix for non BMP chars
         str = eina_unicode_utf8_to_unicode(ev->string, NULL);
-        event.unmodified_character = *str;
+        if (str)
+          event.unmodified_character = *str;
         free(str);
      }
 
