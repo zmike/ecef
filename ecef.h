@@ -358,6 +358,7 @@ void render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int
 
 extern Eina_Bool servo;
 extern Eina_Bool gl_avail;
+extern Eina_List *clients;
 
 # define E_LIST_HANDLER_APPEND(list, type, callback, data) \
   do \

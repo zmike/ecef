@@ -11,6 +11,9 @@
 Eina_Bool servo;
 Eina_Bool gl_avail;
 static Eina_List *handlers;
+
+Eina_List *clients;
+
 static Eina_Bool
 timer(void *d EINA_UNUSED)
 {
@@ -130,6 +133,7 @@ main(int argc, char *argv[])
    window_info.height = 480;
    client = CEF_NEW(ECef_Client);
    ec = (void*)client;
+   clients = eina_list_append(clients, ec);
    if (gl_avail)
      client->get_render_handler = client_render_handler_get;
    client->get_display_handler = client_display_handler_get;
