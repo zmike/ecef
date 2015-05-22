@@ -345,3 +345,26 @@ render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, i
    evas_object_event_callback_add(i, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)render_image_geom, b);
    evas_object_show(i);
 }
+
+static void
+render_image_clone_del(void *data, Evas *e, Evas_Object *obj, void *event_info)
+{
+   Browser *b = data;
+
+   b->clones = eina_list_remove(b->clones, obj);
+}
+
+Evas_Object *
+render_image_clone(Browser *b)
+{
+   Evas_Object *img;
+   ECef_Client *ec;
+
+   if (!servo) return NULL; //temp
+
+   ec = browser_get_client(b->browser);
+   img = elm_image_add(ec->win);
+   evas_object_event_callback_add(img, EVAS_CALLBACK_DEL, render_image_clone_del, b);
+   b->clones = eina_list_append(b->clones, img);
+   return img;
+}

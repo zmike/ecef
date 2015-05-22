@@ -305,6 +305,7 @@ typedef struct Browser
    GLuint fbo;
    GLuint tex;
    int pw, ph;
+   Eina_List *clones;
 #endif
    int w, h;
 } Browser;

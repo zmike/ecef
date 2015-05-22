@@ -60,6 +60,32 @@ static const char fragment_texture[] =
       "}\n";
 
 static void
+render_image_servo_clones_update(Browser *b)
+{
+   Evas_Native_Surface ns;
+   Evas_Object *o;
+   Eina_List *l;
+
+   ns.version = EVAS_NATIVE_SURFACE_VERSION;
+   ns.type = EVAS_NATIVE_SURFACE_OPENGL;
+   ns.data.opengl.texture_id = b->tex;
+   ns.data.opengl.framebuffer_id = b->fbo;
+   ns.data.opengl.internal_format = GL_RGBA;
+   ns.data.opengl.format = GL_BGRA_EXT;
+   ns.data.opengl.x = ns.data.opengl.y = 0;
+   ns.data.opengl.w = b->w;
+   ns.data.opengl.h = b->h;
+   EINA_LIST_FOREACH(b->clones, l, o)
+     {
+        Evas_Object *img = elm_image_object_get(o);
+
+        evas_object_image_native_surface_set(img, &ns);
+        evas_object_image_size_set(img, b->w, b->h);
+        evas_object_image_pixels_dirty_set(img, 1);
+     }
+}
+
+static void
 render_image_servo_init(Evas_Object *obj)
 {
    Browser *b;
@@ -207,9 +233,9 @@ fprintf(stderr, "RENDER\n");
 void
 render_image_servo_paint(Browser *b)
 {
-fprintf(stderr, "PAINT\n");
    elm_glview_size_set(b->img, b->w, b->h);
    elm_glview_changed_set(b->img);
+   render_image_servo_clones_update(b);
 }
 
 void

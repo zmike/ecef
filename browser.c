@@ -11,12 +11,15 @@ static void
 browser_page_del(Browser *b, Evas_Object *obj EINA_UNUSED)
 {
    int id;
+   Evas_Object *o;
    ECef_Client *ec;
 
    ec = browser_get_client(b->browser);
    id = b->browser->get_identifier(b->browser);
    eina_hash_del_by_key(ec->browsers, &id);
    browser_get_host(b->browser)->close_browser(browser_get_host(b->browser), 0);
+   EINA_LIST_FREE(b->clones, o)
+     evas_object_del(o);
    evas_object_del(b->img);
    free(b);
 }
