@@ -59,6 +59,18 @@ browser_process_handler_get(cef_app_t *self EINA_UNUSED)
 #endif
 
 static Eina_Bool
+paste_url(void *data, Evas_Object *obj EINA_UNUSED, Elm_Selection_Data *ev)
+{
+   ECef_Client *ec = data;
+   char *url;
+
+   url = (char*)eina_memdup(ev->data, ev->len, 1);
+   browser_urlbar_set(ec, url);
+   free(url);
+   return EINA_TRUE;
+}
+
+static Eina_Bool
 key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
 {
    ECef_Client *ec;
@@ -78,6 +90,8 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
      }
    else if ((!strcmp(ev->key, "F8")) && (!ev->modifiers))
      browser_urlbar_show(ec, 0);
+   else if ((!strcasecmp(ev->key, "v")) && (ev->modifiers & (ECORE_EVENT_MODIFIER_CTRL | ECORE_EVENT_MODIFIER_SHIFT)))
+     elm_cnp_selection_get(ec->win, ELM_SEL_TYPE_CLIPBOARD, ELM_SEL_FORMAT_TEXT, paste_url, ec);
    else
      return ECORE_CALLBACK_RENEW;
    return ECORE_CALLBACK_CANCEL;
