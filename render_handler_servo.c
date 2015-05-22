@@ -132,6 +132,8 @@ static void
 render_image_servo_render(Evas_Object *obj)
 {
    Browser *b;
+   GLuint u;
+   float mvp[16];
    Evas_GL_API *api;
    cef_browser_host_t *host;
 fprintf(stderr, "RENDER\n");
@@ -163,6 +165,12 @@ fprintf(stderr, "RENDER\n");
    api->glBindBuffer(GL_ARRAY_BUFFER, b->vbo);GLERR;
    api->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0); GLERR;
    api->glEnableVertexAttribArray(1); GLERR;
+
+   u = api->glGetUniformLocation(b->program, "mvpMatrix"); GLERR;;
+   api->glUniformMatrix4fv(u, 1, GL_FALSE, mvp); GLERR;;
+
+   u = api->glGetUniformLocation(b->program, "tex"); GLERR;;
+   api->glUniform1i(u, 0); GLERR;;
 
    api->glDrawArrays(GL_TRIANGLES, 0, 6);GLERR;
    api->glBindBuffer(GL_ARRAY_BUFFER, 0);GLERR;
