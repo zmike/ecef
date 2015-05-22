@@ -8,6 +8,8 @@ collections {
    group { "elm/layout/ecef/base"; nomouse;
       script_recursion: 1;
       images.image: "box_glow.png" COMP;
+      images.image: "glow_round_corners_small.png" COMP;
+      images.image: "knob_round_small_busy.png" COMP;
       script {
          public urlbar_changed = 0;
          public urlbar_visible = 0;
@@ -161,6 +163,73 @@ collections {
             script {
                if (get_int(urlbar_changed))
                   run_program(get_program_id("hide_urlbar_delayed"));
+            }
+         }
+
+         rect { "loading_clip";
+            desc {
+               color: 255 255 255 0;
+               hid;
+            }
+            desc { "loading";
+               color: 255 255 255 255;
+            }
+         }
+         image { "knob"; scale;
+            clip: "loading_clip";
+            desc {
+               fixed: 1 1;
+               image.normal: "knob_round_small_busy.png";
+               aspect_preference: SOURCE;
+               min: 20 20;
+               rel2.relative: 1.0 0.0;
+               align: 1.0 0;
+            }
+         }
+         image { "knob_spinner"; scale; clip: "loading_clip";
+            desc {
+               fixed: 1 1;
+               rel.to: "knob";
+               image.normal: "glow_round_corners_small.png";
+               map.on: 1;
+               map.smooth: 1;
+               map.rotation.center: "knob";
+            }
+            desc {"spin"; inherit;
+               map.rotation.z: 360;
+            }
+         }
+         program {
+            signal: "ecef,state,loading"; source: "ecef";
+            filter: "knob_spinner" "default";
+            sequence {
+               action: STATE_SET "spin";
+               name: "spin";
+               transition: LINEAR 1.0;
+               target: "knob_spinner";
+               action: STATE_SET "default";
+               name: "spin2";
+               target: "knob_spinner";
+               after: "spin";
+            }
+         }
+         program { "load_clip";
+            signal: "ecef,state,loading"; source: "ecef";
+            filter: "loading_clip" "default";
+            action: STATE_SET "loading";
+            transition: SINUSOIDAL 0.25;
+            target: "loading_clip";
+         }
+         program { "loaded";
+            signal: "ecef,state,loaded"; source: "ecef";
+            action: STATE_SET "default";
+            transition: SINUSOIDAL 1.0;
+            target: "loading_clip";
+            sequence {
+               action: ACTION_STOP;
+               targets: "spin" "spin2";
+               action: STATE_SET "default";
+               target: "knob_spinner";
             }
          }
       }

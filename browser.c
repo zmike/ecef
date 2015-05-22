@@ -25,7 +25,7 @@ browser_page_del(Browser *b, Evas_Object *obj EINA_UNUSED)
 }
 
 static void
-browser_buttons_add(Evas_Object *layout, cef_browser_t *browser)
+browser_buttons_add(ECef_Client *ec, cef_browser_t *browser)
 {
    const char *swallows[] =
    {
@@ -51,17 +51,23 @@ browser_buttons_add(Evas_Object *layout, cef_browser_t *browser)
       (Evas_Smart_Cb)browser_forward,
       (Evas_Smart_Cb)browser_refresh,
    };
+   Evas_Object **objs[] =
+   {
+      &ec->back,
+      &ec->forward,
+      &ec->reload,
+   };
    int i;
 
    for (i = 0; i < EINA_C_ARRAY_LENGTH(swallows); i++)
      {
         Evas_Object *o;
 
-        o = button_add(layout, icons[i], NULL, NULL, callbacks[i], browser);
+        *objs[i] = o = button_add(ec->win, icons[i], NULL, NULL, callbacks[i], browser);
         elm_object_tooltip_text_set(o, tooltips[i]);
         //elm_object_tooltip_style_set(o, "ecef");
         elm_object_style_set(o, "browser_navigation");
-        elm_object_part_content_set(layout, swallows[i], o);
+        elm_object_part_content_set(ec->layout, swallows[i], o);
      }
 }
 
@@ -131,7 +137,7 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    if (ec->current_page) return;
    /* first browser creation: set up callbacks */
    browser_set(ec, b);
-   browser_buttons_add(ec->layout, browser);
+   browser_buttons_add(ec, browser);
    elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,visible", "ecef", urlbar_visible, ec);
    elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,hidden", "ecef", urlbar_hidden, ec);
    evas_object_smart_callback_add(ec->urlbar, "activated", (Evas_Smart_Cb)urlbar_activate, ec);

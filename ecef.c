@@ -197,6 +197,7 @@ main(int argc, char *argv[])
    if (gl_avail)
      client->get_render_handler = client_render_handler_get;
    client->get_display_handler = client_display_handler_get;
+   client->get_load_handler = client_load_handler_get;
    client->get_life_span_handler = client_life_span_handler_get;
    ec->browsers = eina_hash_int32_new(NULL);
    ec->browser_settings = &browser_settings;

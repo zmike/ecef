@@ -308,6 +308,9 @@ typedef struct Browser
    Eina_List *clones;
 #endif
    int w, h;
+   Eina_Bool can_back : 1;
+   Eina_Bool can_forward : 1;
+   Eina_Bool loading : 1;
 } Browser;
 
 typedef struct ECef_Client
@@ -317,10 +320,12 @@ typedef struct ECef_Client
    Evas_Object *layout;
    Evas_Object *pagelist;
    Evas_Object *urlbar;
+   Evas_Object *back, *forward, *reload;
    Browser *current_page;
    Eina_Hash *browsers;
    cef_render_handler_t *render_handler;
    cef_display_handler_t *display_handler;
+   cef_load_handler_t *load_handler;
    cef_window_info_t *window_info;
    cef_browser_settings_t *browser_settings;
    Eina_Bool urlbar_changed : 1;
@@ -329,6 +334,7 @@ typedef struct ECef_Client
 
 cef_render_handler_t *client_render_handler_get(cef_client_t *client);
 cef_display_handler_t *client_display_handler_get(cef_client_t *client);
+cef_load_handler_t *client_load_handler_get(cef_client_t *client);
 
 static inline cef_browser_host_t *
 browser_get_host(cef_browser_t *browser)
