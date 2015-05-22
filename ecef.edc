@@ -25,7 +25,7 @@ collections {
             desc { align: 0 0;
                rel1.relative: 1 0;
                rel2.relative: 0 1;
-               rel1.offset: 5 0;
+               rel1.offset: 8 0;
                rel1.to_x: "ecef.swallow.back";
                rel1.to_y: "ecef.swallow.urlbar";
                rel2.to_y: "ecef.swallow.urlbar";
@@ -35,7 +35,7 @@ collections {
             desc { align: 0 0;
                rel1.relative: 1 0;
                rel2.relative: 0 1;
-               rel1.offset: 5 0;
+               rel1.offset: 8 0;
                rel1.to_x: "ecef.swallow.forward";
                rel1.to_y: "ecef.swallow.urlbar";
                rel2.to_y: "ecef.swallow.urlbar";
@@ -57,13 +57,14 @@ collections {
             desc { hid; align: 0.0 0;
                rel1.relative: 1 -0.5;
                rel2.relative: 1 0;
-               rel1.offset: 5 0;
+               rel1.offset: 8 0;
                rel2.offset: -3 -1;
                rel1.to_x: "ecef.swallow.refresh";
             }
             desc { "visible"; align: 0.0 0;
                rel1.relative: 1 0;
                rel2.relative: 1 0;
+               rel1.offset: 8 0;
                rel2.offset: -3 30;
                rel1.to_x: "ecef.swallow.refresh";
             }
