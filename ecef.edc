@@ -41,7 +41,7 @@ collections {
                rel.to_y: "ecef.swallow.urlbar";
             }
          }
-         swallow { "ecef.swallow.refresh"; mouse;
+         swallow { "ecef.swallow.reload"; mouse;
             desc { align: 0 0;
                rel1.relative: 1 0;
                rel2.relative: 0 1;
@@ -67,14 +67,14 @@ collections {
                rel2.relative: 1 0;
                rel1.offset: 8 0;
                rel2.offset: -3 -1;
-               rel1.to_x: "ecef.swallow.refresh";
+               rel1.to_x: "ecef.swallow.reload";
             }
             desc { "visible"; align: 0.0 0;
                rel1.relative: 1 0;
                rel2.relative: 1 0;
                rel1.offset: 8 0;
                rel2.offset: -3 30;
-               rel1.to_x: "ecef.swallow.refresh";
+               rel1.to_x: "ecef.swallow.reload";
             }
          }
          program { "show_urlbar";

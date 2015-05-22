@@ -31,7 +31,7 @@ browser_buttons_add(ECef_Client *ec, cef_browser_t *browser)
    {
       "ecef.swallow.back",
       "ecef.swallow.forward",
-      "ecef.swallow.refresh",
+      "ecef.swallow.reload",
    };
    const char *icons[] =
    {
@@ -49,7 +49,7 @@ browser_buttons_add(ECef_Client *ec, cef_browser_t *browser)
    {
       (Evas_Smart_Cb)browser_back,
       (Evas_Smart_Cb)browser_forward,
-      (Evas_Smart_Cb)browser_refresh,
+      (Evas_Smart_Cb)browser_reload,
    };
    Evas_Object **objs[] =
    {
@@ -182,7 +182,7 @@ browser_forward(cef_browser_t *browser, ...)
 }
 
 void
-browser_refresh(cef_browser_t *browser, ...)
+browser_reload(cef_browser_t *browser, ...)
 {
    browser->reload(browser);
 }

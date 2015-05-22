@@ -369,7 +369,7 @@ Browser *browser_get(ECef_Client *ec, cef_browser_t *browser);
 void browser_set(ECef_Client *ec, Browser *b);
 void browser_back(cef_browser_t *browser, ...);
 void browser_forward(cef_browser_t *browser, ...);
-void browser_refresh(cef_browser_t *browser, ...);
+void browser_reload(cef_browser_t *browser, ...);
 void browser_urlbar_show(ECef_Client *ec, Eina_Bool changed);
 void browser_urlbar_hide(ECef_Client *ec);
 void browser_urlbar_set(ECef_Client *ec, const char *url);
