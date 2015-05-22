@@ -323,6 +323,7 @@ typedef struct ECef_Client
    cef_display_handler_t *display_handler;
    cef_window_info_t *window_info;
    cef_browser_settings_t *browser_settings;
+   Eina_Bool urlbar_changed : 1;
 } ECef_Client;
 
 

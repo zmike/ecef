@@ -65,6 +65,45 @@ browser_buttons_add(Evas_Object *layout, cef_browser_t *browser)
      }
 }
 
+static void
+urlbar_visible(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED, const char *src EINA_UNUSED)
+{
+   ECef_Client *ec = d;
+
+   if (!ec->urlbar_changed)
+     elm_object_focus_set(ec->urlbar, 1);
+}
+
+static void
+urlbar_hidden(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED, const char *src EINA_UNUSED)
+{
+   ECef_Client *ec = d;
+
+   ec->urlbar_changed = 0;
+}
+
+static void
+urlbar_changed(ECef_Client *ec, Evas_Object *obj, void *ev EINA_UNUSED)
+{
+   /* ensure urlbar does not hide while user is typing */
+   if (ec->urlbar_changed)
+     browser_urlbar_show(ec, 0);
+}
+
+static void
+urlbar_activate(ECef_Client *ec, Evas_Object *obj, void *ev EINA_UNUSED)
+{
+   cef_frame_t *fr;
+   cef_string_t str = {0};
+   Eina_Stringshare *url;
+
+   url = elm_entry_entry_get(obj);
+   cef_string_from_utf8(url, strlen(url), &str);
+   fr = ec->current_page->browser->get_main_frame(ec->current_page->browser);
+   fr->load_url(fr, &str);
+   cef_string_clear(&str);
+}
+
 void
 on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_t *browser)
 {
@@ -90,8 +129,13 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    eina_hash_add(ec->browsers, &id, b);
    b->it = elm_genlist_item_append(ec->pagelist, &browser_itc, b, NULL, ELM_GENLIST_ITEM_NONE, NULL, NULL);
    if (ec->current_page) return;
+   /* first browser creation: set up callbacks */
    browser_set(ec, b);
    browser_buttons_add(ec->layout, browser);
+   elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,visible", "ecef", urlbar_visible, ec);
+   elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,hidden", "ecef", urlbar_hidden, ec);
+   evas_object_smart_callback_add(ec->urlbar, "activated", (Evas_Smart_Cb)urlbar_activate, ec);
+   evas_object_smart_callback_add(ec->urlbar, "changed,user", (Evas_Smart_Cb)urlbar_changed, ec);
 }
 
 void
@@ -142,11 +186,12 @@ browser_urlbar_show(ECef_Client *ec, Eina_Bool changed)
 {
    if (changed)
      {
-        if (!evas_object_visible_get(ec->urlbar))
+        if (evas_object_visible_get(ec->urlbar)) return;
           elm_layout_signal_emit(ec->layout, "ecef,urlbar,change", "ecef");
      }
    else
      elm_layout_signal_emit(ec->layout, "ecef,urlbar,show", "ecef");
+   ec->urlbar_changed = changed;
 }
 
 void

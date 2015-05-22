@@ -107,27 +107,7 @@ mouse_move()
    return ECORE_CALLBACK_RENEW;
 }
 
-static void
-urlbar_visible(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED, const char *src EINA_UNUSED)
-{
-   ECef_Client *ec = d;
 
-   elm_object_focus_set(ec->urlbar, 1);
-}
-
-static void
-urlbar_activate(ECef_Client *ec, Evas_Object *obj, void *ev EINA_UNUSED)
-{
-   cef_frame_t *fr;
-   cef_string_t str = {0};
-   Eina_Stringshare *url;
-
-   url = elm_entry_entry_get(obj);
-   cef_string_from_utf8(url, strlen(url), &str);
-   fr = ec->current_page->browser->get_main_frame(ec->current_page->browser);
-   fr->load_url(fr, &str);
-   cef_string_clear(&str);
-}
 
 
 Evas_Object *
@@ -230,7 +210,6 @@ main(int argc, char *argv[])
    evas_object_resize(ec->layout, 640, 480);
    elm_win_resize_object_add(win, ec->layout);
    elm_layout_theme_set(ec->layout, "layout", "ecef", "base");
-   elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,visible", "ecef", urlbar_visible, ec);
    evas_object_show(ec->layout);
 
    ec->pagelist = elm_genlist_add(win);
@@ -252,7 +231,6 @@ main(int argc, char *argv[])
 
    ec->urlbar = elm_entry_add(win);
    elm_entry_single_line_set(ec->urlbar, 1);
-   evas_object_smart_callback_add(ec->urlbar, "activated", (Evas_Smart_Cb)urlbar_activate, ec);
    elm_object_part_content_set(ec->layout, "ecef.swallow.urlbar", ec->urlbar);
 
    evas_object_show(win);

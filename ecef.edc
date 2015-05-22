@@ -1,6 +1,17 @@
+/* controls size (in pixels) of event areas */
+#define TOP_EVENT_SIZE 10
+#define BOTTOM_EVENT_SIZE 10
+#define LEFT_EVENT_SIZE 10
+#define RIGHT_EVENT_SIZE 10
+
 collections {
    group { "elm/layout/ecef/base"; nomouse;
+      script_recursion: 1;
       images.image: "box_glow.png" COMP;
+      script {
+         public urlbar_changed = 0;
+         public urlbar_visible = 0;
+      }
       parts {
          rect { "base";
             desc { color: 0 0 0 255; }
@@ -8,8 +19,7 @@ collections {
          swallow { "ecef.swallow.browser"; mouse; }
          rect { "urlbar_fader";
             desc {
-               rel1.to_y: "ecef.swallow.urlbar";
-               rel2.to_y: "ecef.swallow.urlbar";
+               rel.to_y: "ecef.swallow.urlbar";
                color: 0 0 0 192;
             }
          }
@@ -17,8 +27,7 @@ collections {
             desc { align: 0 0;
                rel1.offset: 3 0;
                rel2.relative: 0 1;
-               rel1.to_y: "ecef.swallow.urlbar";
-               rel2.to_y: "ecef.swallow.urlbar";
+               rel.to_y: "ecef.swallow.urlbar";
             }
          }
          swallow { "ecef.swallow.forward"; mouse;
@@ -27,8 +36,7 @@ collections {
                rel2.relative: 0 1;
                rel1.offset: 8 0;
                rel1.to_x: "ecef.swallow.back";
-               rel1.to_y: "ecef.swallow.urlbar";
-               rel2.to_y: "ecef.swallow.urlbar";
+               rel.to_y: "ecef.swallow.urlbar";
             }
          }
          swallow { "ecef.swallow.refresh"; mouse;
@@ -37,8 +45,7 @@ collections {
                rel2.relative: 0 1;
                rel1.offset: 8 0;
                rel1.to_x: "ecef.swallow.forward";
-               rel1.to_y: "ecef.swallow.urlbar";
-               rel2.to_y: "ecef.swallow.urlbar";
+               rel.to_y: "ecef.swallow.urlbar";
             }
          }
          image { "urlbar_border";
@@ -49,8 +56,7 @@ collections {
                image.middle: 0;
                rel1.offset: -7 -6;
                rel2.offset: 7 5;
-               rel1.to: "ecef.swallow.urlbar";
-               rel2.to: "ecef.swallow.urlbar";
+               rel.to: "ecef.swallow.urlbar";
             }
          }
          swallow { "ecef.swallow.urlbar"; mouse;
@@ -71,13 +77,28 @@ collections {
          }
          program { "show_urlbar";
             signal: "ecef,urlbar,show"; source: "ecef";
-            action: STATE_SET "visible";
-            transition: LINEAR 0.4;
-            target: "ecef.swallow.urlbar";
-            sequence { action: SIGNAL_EMIT "ecef,urlbar,visible" "ecef"; }
+            script {
+               set_int(urlbar_changed, 0);
+               stop_program(get_program_id("hide_urlbar_delayed"));
+            }
+            after: "show_urlbar_begin";
+         }
+         program { "show_urlbar_begin";
+            script {
+               set_int(urlbar_visible, 1);
+            }
+            sequence {
+               action: STATE_SET "visible";
+               transition: LINEAR 0.4;
+               target: "ecef.swallow.urlbar";
+               action: SIGNAL_EMIT "ecef,urlbar,visible" "ecef";
+            }
          }
          program { signal: "ecef,urlbar,change"; source: "ecef";
-            after: "show_urlbar";
+            script {
+               set_int(urlbar_changed, 1);
+            }
+            after: "show_urlbar_begin";
             after: "hide_urlbar_delayed";
          }
          program { "hide_urlbar_delayed";
@@ -85,11 +106,18 @@ collections {
             after: "hide_urlbar";
          }
          program { "hide_urlbar";
+            filter: "ecef.swallow.urlbar" "visible";
             signal: "ecef,urlbar,hide"; source: "ecef";
-            action: STATE_SET "default";
-            transition: LINEAR 0.4;
-            target: "ecef.swallow.urlbar";
-            sequence { action: SIGNAL_EMIT "ecef,urlbar,hidden" "ecef"; }
+            script {
+               set_int(urlbar_changed, 0);
+               set_int(urlbar_visible, 0);
+            }
+            sequence {
+               action: STATE_SET "default";
+               transition: LINEAR 0.4;
+               target: "ecef.swallow.urlbar";
+               action: SIGNAL_EMIT "ecef,urlbar,hidden" "ecef";
+            }
          }
          swallow { "ecef.swallow.pagelist"; mouse;
             desc { hid; align: 0 0;
@@ -102,6 +130,37 @@ collections {
                rel2.relative: 0.3 1;
                link.base: "ecef,pagelist,show" "ecef";
                link.transition: LINEAR 0.2;
+            }
+         }
+         rect { "top_events"; mouse; repeat; scale;
+            desc {
+               min: 0 TOP_EVENT_SIZE;
+               max: -1 TOP_EVENT_SIZE;
+               align: 0.5 0;
+               fixed: 0 1;
+               color: 0 0 0 0;
+               rel2.relative: 1 0;
+            }
+            desc { "hint_activate"; inherit: "default";
+               color: 52 153 255 100;
+            }
+            desc { "hint_deactivate"; inherit: "default";
+               color: 154 25 25 100;
+            }
+         }
+         program { signal: "mouse,in"; source: "top_events";
+            script {
+               stop_program(get_program_id("hide_urlbar_delayed"));
+               if (!get_int(urlbar_visible)) {
+                  run_program(get_program_id("show_urlbar_begin"));
+                  set_int(urlbar_changed, 1);
+               }
+            }
+         }
+         program { signal: "mouse,out"; source: "top_events";
+            script {
+               if (get_int(urlbar_changed))
+                  run_program(get_program_id("hide_urlbar_delayed"));
             }
          }
       }
