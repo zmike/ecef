@@ -31,12 +31,12 @@ static const char *vert_shader = \
 #ifndef GL_UNSIGNED_INT_8_8_8_8_REV
 #define GL_UNSIGNED_INT_8_8_8_8_REV 0x8367
 #endif
-#define GLERR() do { on_error(__FUNCTION__, __LINE__); } while (0)
+#define GLERR() do { on_error(gl, __FUNCTION__, __LINE__); } while (0)
 
 static void
-on_error(const char *func, int line)
+on_error(Evas_GL_API *gl, const char *func, int line)
 {
-   int _e = glGetError();
+   int _e = gl->glGetError();
    if (_e)
      {
         fprintf(stderr, "%s:%d: GL error 0x%04x\n", func, line, _e);
@@ -50,7 +50,6 @@ render_gl(Browser *b, int w, int h)
 {
    Evas_GL_API *gl;
 
-GLERR();
    gl = elm_glview_gl_api_get(b->img);GLERR();
 
    gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);GLERR();
