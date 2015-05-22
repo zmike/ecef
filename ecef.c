@@ -92,6 +92,18 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
      browser_urlbar_show(ec, 0);
    else if ((!strcasecmp(ev->key, "v")) && (ev->modifiers & (ECORE_EVENT_MODIFIER_CTRL | ECORE_EVENT_MODIFIER_SHIFT)))
      elm_cnp_selection_get(ec->win, ELM_SEL_TYPE_CLIPBOARD, ELM_SEL_FORMAT_TEXT, paste_url, ec);
+   else if ((!strcmp(ev->key, "F5")) || ((!strcmp(ev->key, "r")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL)))
+     browser_reload(ec->current_page->browser);
+   else if ((!strcmp(ev->key, "Left")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
+     {
+        if (ec->current_page->can_back)
+          browser_back(ec->current_page->browser);
+     }
+   else if ((!strcmp(ev->key, "Right")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
+     {
+        if (ec->current_page->can_forward)
+          browser_forward(ec->current_page->browser);
+     }
    else
      return ECORE_CALLBACK_RENEW;
    return ECORE_CALLBACK_CANCEL;
