@@ -354,10 +354,15 @@ modifiers_get(Evas_Modifier *m) {
   return modifiers;
 }
 
+Evas_Object *button_add(Evas_Object *parent, const char *icon, const char *text, const char *style, Evas_Smart_Cb cb, void *data);
+
 void on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_t *browser);
 void browser_new(ECef_Client *ec, const char *url);
 Browser *browser_get(ECef_Client *ec, cef_browser_t *browser);
 void browser_set(ECef_Client *ec, Browser *b);
+void browser_back(cef_browser_t *browser, ...);
+void browser_forward(cef_browser_t *browser, ...);
+void browser_refresh(cef_browser_t *browser, ...);
 void browser_urlbar_show(ECef_Client *ec, Eina_Bool changed);
 void browser_urlbar_hide(ECef_Client *ec);
 void browser_pagelist_show(ECef_Client *ec);

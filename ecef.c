@@ -129,6 +129,31 @@ urlbar_activate(ECef_Client *ec, Evas_Object *obj, void *ev EINA_UNUSED)
    cef_string_clear(&str);
 }
 
+
+Evas_Object *
+button_add(Evas_Object *parent, const char *icon, const char *text, const char *style, Evas_Smart_Cb cb, void *data)
+{
+   Evas_Object *o, *ic;
+
+   o = elm_button_add(parent);
+   if (style)
+     elm_object_style_set(o, style);
+   elm_object_focus_allow_set(o, EINA_FALSE);
+   EXPAND(o);
+   FILL(o);
+   ic = elm_icon_add(parent);
+   elm_image_resizable_set(ic, 0, 0);
+   elm_icon_order_lookup_set(ic, ELM_ICON_LOOKUP_THEME_FDO);
+   elm_icon_standard_set(ic, icon);
+   elm_object_part_content_set(o, "icon", ic);
+   if (text)
+     elm_object_text_set(o, text);
+   evas_object_show(ic);
+   evas_object_show(o);
+   evas_object_smart_callback_add(o, "clicked", cb, data);
+   return o;
+}
+
 int
 main(int argc, char *argv[])
 {

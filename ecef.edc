@@ -13,6 +13,34 @@ collections {
                color: 0 0 0 192;
             }
          }
+         swallow { "ecef.swallow.back"; mouse;
+            desc { align: 0 0;
+               rel1.offset: 3 0;
+               rel2.relative: 0 1;
+               rel1.to_y: "ecef.swallow.urlbar";
+               rel2.to_y: "ecef.swallow.urlbar";
+            }
+         }
+         swallow { "ecef.swallow.forward"; mouse;
+            desc { align: 0 0;
+               rel1.relative: 1 0;
+               rel2.relative: 0 1;
+               rel1.offset: 5 0;
+               rel1.to_x: "ecef.swallow.back";
+               rel1.to_y: "ecef.swallow.urlbar";
+               rel2.to_y: "ecef.swallow.urlbar";
+            }
+         }
+         swallow { "ecef.swallow.refresh"; mouse;
+            desc { align: 0 0;
+               rel1.relative: 1 0;
+               rel2.relative: 0 1;
+               rel1.offset: 5 0;
+               rel1.to_x: "ecef.swallow.forward";
+               rel1.to_y: "ecef.swallow.urlbar";
+               rel2.to_y: "ecef.swallow.urlbar";
+            }
+         }
          image { "urlbar_border";
             desc {
                image.normal: "box_glow.png";
@@ -26,14 +54,18 @@ collections {
             }
          }
          swallow { "ecef.swallow.urlbar"; mouse;
-            desc { hid; align: 0.5 0;
+            desc { hid; align: 0.0 0;
                rel1.relative: 1 -0.5;
-               rel2.relative: 0 0;
+               rel2.relative: 1 0;
+               rel1.offset: 5 0;
+               rel2.offset: -3 -1;
+               rel1.to_x: "ecef.swallow.refresh";
             }
-            desc { "visible"; align: 0.5 0;
+            desc { "visible"; align: 0.0 0;
                rel1.relative: 1 0;
-               rel2.relative: 0 0;
-               rel2.offset: -1 30;
+               rel2.relative: 1 0;
+               rel2.offset: -3 30;
+               rel1.to_x: "ecef.swallow.refresh";
             }
          }
          program { "show_urlbar";
@@ -73,4 +105,56 @@ collections {
          }
       }
    }
+   group { "elm/button/base/browser_navigation"; nomouse;
+      parts {
+         swallow { "elm.swallow.content";
+            clip: "clip";
+            desc {
+               aspect: 1.0 1.0;
+               rel2.relative: 1 1;
+            }
+         }
+         rect { "clip";
+            desc {
+               color: 255 255 255 255;
+            }
+            desc { "active";
+               color: 52 153 255 255;
+            }
+         }
+         rect { "events"; mouse;
+            desc {
+               color: 0 0 0 0;
+            }
+         }
+         program { signal: "mouse,down,1"; source: "events";
+            action: SIGNAL_EMIT "elm,action,press" "";
+         }
+         program { signal: "mouse,clicked,1"; source: "events";
+            action: SIGNAL_EMIT "elm,action,click" "";
+         }
+         program { signal: "mouse,up,1"; source: "events";
+            action: SIGNAL_EMIT "elm,action,unpress" "";
+         }
+         program { signal: "mouse,in"; source: "events";
+            action: STATE_SET "active";
+            target: "clip";
+            transition: LINEAR 0.2 CURRENT;
+         }
+         program { signal: "mouse,out"; source: "events";
+            action: STATE_SET "default";
+            target: "clip";
+            transition: LINEAR 0.2 CURRENT;
+         }
+      }
+   }
+#define IC(Name, File, Min, Max) \
+   group { "elm/icon/"##Name##"/default"; min: Min Min; max: Max Max; \
+   images.image: File COMP; parts { part { "base"; \
+   desc { aspect: 1.0 1.0; aspect_preference: BOTH; \
+   image.normal: File; } } } }
+
+IC("back", "back.png", 16, 0);
+IC("forward", "forward.png", 16, 0);
+IC("reload", "reload.png", 16, 0);
 }

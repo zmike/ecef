@@ -150,7 +150,7 @@ render_image_servo_present(cef_render_handler_t *handler EINA_UNUSED, cef_browse
 {
    Browser *b = browser_get(browser_get_client(browser), browser);
 
-fprintf(stderr, "PRESENT\n");
+//fprintf(stderr, "PRESENT\n");
 
 }
 
@@ -186,7 +186,7 @@ render_image_servo_render(Evas_Object *obj)
    float mvp[16];
    Evas_GL_API *api;
    cef_browser_host_t *host;
-fprintf(stderr, "RENDER\n");
+//fprintf(stderr, "RENDER\n");
    b = evas_object_data_get(obj, "Browser");
    host = browser_get_host(b->browser);
    api = evas_gl_api_get(b->gl);

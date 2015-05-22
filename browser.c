@@ -24,6 +24,47 @@ browser_page_del(Browser *b, Evas_Object *obj EINA_UNUSED)
    free(b);
 }
 
+static void
+browser_buttons_add(Evas_Object *layout, cef_browser_t *browser)
+{
+   const char *swallows[] =
+   {
+      "ecef.swallow.back",
+      "ecef.swallow.forward",
+      "ecef.swallow.refresh",
+   };
+   const char *icons[] =
+   {
+      "back",
+      "forward",
+      "reload"
+   };
+   const char *tooltips[] =
+   {
+      "Back",
+      "Forward",
+      "Reload",
+   };
+   Evas_Smart_Cb callbacks[] =
+   {
+      (Evas_Smart_Cb)browser_back,
+      (Evas_Smart_Cb)browser_forward,
+      (Evas_Smart_Cb)browser_refresh,
+   };
+   int i;
+
+   for (i = 0; i < EINA_C_ARRAY_LENGTH(swallows); i++)
+     {
+        Evas_Object *o;
+
+        o = button_add(layout, icons[i], NULL, NULL, callbacks[i], browser);
+        elm_object_tooltip_text_set(o, tooltips[i]);
+        //elm_object_tooltip_style_set(o, "ecef");
+        elm_object_style_set(o, "browser_navigation");
+        elm_object_part_content_set(layout, swallows[i], o);
+     }
+}
+
 void
 on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_t *browser)
 {
@@ -48,8 +89,9 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    render_image_new(ec, b, host, w, h);
    eina_hash_add(ec->browsers, &id, b);
    b->it = elm_genlist_item_append(ec->pagelist, &browser_itc, b, NULL, ELM_GENLIST_ITEM_NONE, NULL, NULL);
-   if (!ec->current_page)
-     browser_set(ec, b);
+   if (ec->current_page) return;
+   browser_set(ec, b);
+   browser_buttons_add(ec->layout, browser);
 }
 
 void
@@ -75,6 +117,24 @@ browser_new(ECef_Client *ec, const char *url)
    cef_string_from_utf8(url, strlen(url), &u);
    cef_browser_host_create_browser(ec->window_info, &ec->client, &u, ec->browser_settings, NULL);
    cef_string_clear(&u);
+}
+
+void
+browser_back(cef_browser_t *browser, ...)
+{
+   browser->go_back(browser);
+}
+
+void
+browser_forward(cef_browser_t *browser, ...)
+{
+   browser->go_forward(browser);
+}
+
+void
+browser_refresh(cef_browser_t *browser, ...)
+{
+   browser->reload(browser);
 }
 
 void
