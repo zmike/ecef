@@ -129,11 +129,35 @@ fprintf(stderr, "PRESENT\n");
 }
 
 static void
+init_matrix(float matrix[16])
+{
+   matrix[0] = 1.0f;
+   matrix[1] = 0.0f;
+   matrix[2] = 0.0f;
+   matrix[3] = 0.0f;
+
+   matrix[4] = 0.0f;
+   matrix[5] = 1.0f;
+   matrix[6] = 0.0f;
+   matrix[7] = 0.0f;
+
+   matrix[8] = 0.0f;
+   matrix[9] = 0.0f;
+   matrix[10] = 1.0f;
+   matrix[11] = 0.0f;
+
+   matrix[12] = 0.0f;
+   matrix[13] = 0.0f;
+   matrix[14] = 0.0f;
+   matrix[15] = 1.0f;
+}
+
+static void
 render_image_servo_render(Evas_Object *obj)
 {
    Browser *b;
    GLuint u;
-   float mvp[16];
+   float model[16], mvp[16];
    Evas_GL_API *api;
    cef_browser_host_t *host;
 fprintf(stderr, "RENDER\n");
@@ -166,11 +190,15 @@ fprintf(stderr, "RENDER\n");
    api->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0); GLERR;
    api->glEnableVertexAttribArray(1); GLERR;
 
+   init_matrix(model);
    u = api->glGetUniformLocation(b->program, "mvpMatrix"); GLERR;;
    api->glUniformMatrix4fv(u, 1, GL_FALSE, mvp); GLERR;;
 
    u = api->glGetUniformLocation(b->program, "tex"); GLERR;;
    api->glUniform1i(u, 0); GLERR;;
+
+   api->glActiveTexture(GL_TEXTURE0);
+   api->glBindTexture(GL_TEXTURE_2D, b->tex);
 
    api->glDrawArrays(GL_TRIANGLES, 0, 6);GLERR;
    api->glBindBuffer(GL_ARRAY_BUFFER, 0);GLERR;
