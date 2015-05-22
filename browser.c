@@ -91,13 +91,13 @@ urlbar_changed(ECef_Client *ec, Evas_Object *obj, void *ev EINA_UNUSED)
 }
 
 static void
-urlbar_activate(ECef_Client *ec, Evas_Object *obj, void *ev EINA_UNUSED)
+urlbar_activate(ECef_Client *ec, ...)
 {
    cef_frame_t *fr;
    cef_string_t str = {0};
    Eina_Stringshare *url;
 
-   url = elm_entry_entry_get(obj);
+   url = elm_entry_entry_get(ec->urlbar);
    cef_string_from_utf8(url, strlen(url), &str);
    fr = ec->current_page->browser->get_main_frame(ec->current_page->browser);
    fr->load_url(fr, &str);
@@ -198,6 +198,13 @@ void
 browser_urlbar_hide(ECef_Client *ec)
 {
    elm_layout_signal_emit(ec->layout, "ecef,urlbar,hide", "ecef");
+}
+
+void
+browser_urlbar_set(ECef_Client *ec, const char *url)
+{
+   elm_entry_entry_set(ec->urlbar, url);
+   urlbar_activate(ec);
 }
 
 void
