@@ -14,8 +14,8 @@ on_loading_state_change(cef_load_handler_t *self, cef_browser_t *browser, int is
 
    ec = browser_get_client(browser);
    b = browser_get(ec, browser);
-   b->can_back = !!canGoBack;
-   b->can_forward = !!canGoForward;
+   b->can_back = (!!canGoBack) && browser->can_go_back(browser);
+   b->can_forward = (!!canGoForward) && browser->can_go_forward(browser);
    load_change = b->loading != !!isLoading;
    b->loading = !!isLoading;
    if (ec->current_page != b) return;
