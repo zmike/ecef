@@ -313,6 +313,8 @@ typedef struct Browser
    Eina_Bool loading : 1;
 } Browser;
 
+typedef void (*Browser_Clone_Update_Cb)(Browser *b, Evas_Object *img);
+
 typedef struct ECef_Client
 {
    cef_client_t client;
@@ -323,6 +325,7 @@ typedef struct ECef_Client
    Evas_Object *back, *forward, *reload;
    Browser *current_page;
    Eina_Hash *browsers;
+   Browser_Clone_Update_Cb clone_update_cb;
    cef_render_handler_t *render_handler;
    cef_display_handler_t *display_handler;
    cef_load_handler_t *load_handler;
@@ -377,6 +380,7 @@ void browser_pagelist_show(ECef_Client *ec);
 void browser_pagelist_hide(ECef_Client *ec);
 
 void render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, int h);
+Evas_Object *render_image_clone(Browser *b);
 
 extern Eina_Bool servo;
 extern Eina_Bool gl_avail;

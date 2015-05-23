@@ -60,11 +60,10 @@ static const char fragment_texture[] =
       "}\n";
 
 static void
-render_image_servo_clones_update(Browser *b)
+render_image_servo_clone_update_cb(Browser *b, Evas_Object *o)
 {
    Evas_Native_Surface ns;
-   Evas_Object *o;
-   Eina_List *l;
+   Evas_Object *img;
 
    ns.version = EVAS_NATIVE_SURFACE_VERSION;
    ns.type = EVAS_NATIVE_SURFACE_OPENGL;
@@ -75,14 +74,21 @@ render_image_servo_clones_update(Browser *b)
    ns.data.opengl.x = ns.data.opengl.y = 0;
    ns.data.opengl.w = b->w;
    ns.data.opengl.h = b->h;
-   EINA_LIST_FOREACH(b->clones, l, o)
-     {
-        Evas_Object *img = elm_image_object_get(o);
+   img = elm_image_object_get(o);
 
-        evas_object_image_native_surface_set(img, &ns);
-        evas_object_image_size_set(img, b->w, b->h);
-        evas_object_image_pixels_dirty_set(img, 1);
-     }
+   evas_object_image_native_surface_set(img, &ns);
+   evas_object_image_size_set(img, b->w, b->h);
+   evas_object_image_pixels_dirty_set(img, 1);
+}
+
+static void
+render_image_servo_clones_update(Browser *b)
+{
+   Evas_Object *o;
+   Eina_List *l;
+
+   EINA_LIST_FOREACH(b->clones, l, o)
+     render_image_servo_clone_update_cb(b, o);
 }
 
 static void
@@ -92,8 +98,11 @@ render_image_servo_init(Evas_Object *obj)
    Evas_GL_API *api;
    GLuint vertexShader, fragmentShader, program;
    cef_browser_host_t *host;
+   ECef_Client *ec;
 
    b = evas_object_data_get(obj, "Browser");
+   ec = browser_get_client(b->browser);
+   ec->clone_update_cb = render_image_servo_clone_update_cb;
    host = browser_get_host(b->browser);
    b->gl = elm_glview_evas_gl_get(obj);
    api = evas_gl_api_get(b->gl);
