@@ -233,6 +233,7 @@ main(int argc, char *argv[])
 
    ec->win = win;
 
+   eina_log_domain_level_set("evas_main", EINA_LOG_LEVEL_CRITICAL);
    ec->layout = elm_layout_add(win);
    EXPAND(ec->layout);
    FILL(ec->layout);

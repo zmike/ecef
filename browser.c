@@ -166,6 +166,7 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    if (ec->current_page) return;
    /* first browser creation: set up callbacks */
    browser_set(ec, b);
+   eina_log_domain_level_set("evas_main", EINA_LOG_LEVEL_ERR);
    browser_buttons_add(ec, browser);
    elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,visible", "ecef", urlbar_visible, ec);
    elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,hidden", "ecef", urlbar_hidden, ec);
