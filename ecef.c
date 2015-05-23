@@ -85,6 +85,10 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
      {
         if (elm_object_focus_get(ec->urlbar))
           browser_urlbar_hide(ec);
+        else if (ec->pagelist_visible)
+          browser_pagelist_hide(ec);
+        else if (ec->urlbar_visible)
+          browser_urlbar_hide(ec);
         else
           return ECORE_CALLBACK_RENEW;
      }
