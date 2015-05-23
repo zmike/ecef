@@ -226,6 +226,29 @@ browser_pagelist_hide(ECef_Client *ec)
 }
 
 void
+browser_window_title_update(ECef_Client *ec)
+{
+   char buf[4096] = {0};
+
+   if (ec->current_page->title)
+     snprintf(buf, sizeof(buf), "%s - Servo", ec->current_page->title);
+   else if (ec->current_page->url)
+     {
+        char *p;
+
+        p = strrchr(ec->current_page->url, '/');
+        /* probably image */
+        if (p)
+          snprintf(buf, sizeof(buf), "%s - Servo", p + 1);
+        else
+          snprintf(buf, sizeof(buf), "%s - Servo", ec->current_page->url);
+     }
+   else
+     strcpy(buf, "Blank - Servo");
+   elm_win_title_set(ec->win, buf);
+}
+
+void
 browser_set(ECef_Client *ec, Browser *b)
 {
    cef_browser_host_t *host;
@@ -247,9 +270,9 @@ browser_set(ECef_Client *ec, Browser *b)
           }
      }
    ec->current_page = b;
-   if (b->img)
-     elm_object_part_content_set(ec->layout, "ecef.swallow.browser", b->img);
-   elm_win_title_set(ec->win, b->title);
+   elm_object_part_content_set(ec->layout, "ecef.swallow.browser", b->img);
+   evas_object_size_hint_aspect_set(b->img, EVAS_ASPECT_CONTROL_NONE, -1, -1);
+   browser_window_title_update(ec);
    elm_entry_entry_set(ec->urlbar, b->url);
    host = browser_get_host(ec->current_page->browser);
    //host->set_focus(host, 1);

@@ -60,7 +60,7 @@ on_title_change(cef_display_handler_t *self, cef_browser_t *browser, const cef_s
    eina_stringshare_replace(&b->title, u8.str);
    cef_string_utf8_clear(&u8);
    if (ec->current_page == b)
-     elm_win_title_set(ec->win, b->title);
+     browser_window_title_update(ec);
 }
 
 static void
