@@ -25,10 +25,10 @@ get_root_screen_rect(cef_render_handler_t *self, cef_browser_t *browser, cef_rec
 static int
 get_view_rect(cef_render_handler_t *self, cef_browser_t *browser, cef_rect_t *rect)
 {
-   Browser *b;
+   ECef_Client *ec;
 
-   b = browser_get(browser_get_client(browser), browser);
-   evas_object_geometry_get(b->img, &rect->x, &rect->y, &rect->width, &rect->height);
+   ec = browser_get_client(browser);
+   edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.swallow.browser", &rect->x, &rect->y, &rect->width, &rect->height);
    //fprintf(stderr, "VIEW RECT: %dx%d\n", rect->width, rect->height);
    return 1;
 }
