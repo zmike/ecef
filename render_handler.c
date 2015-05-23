@@ -291,6 +291,7 @@ render_image_resize(Browser *b, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSE
    cef_browser_host_t *host;
    int x, y, w, h;
 
+   if (browser_get_client(b->browser)->current_page != b) return;
    host = browser_get_host(b->browser);
    evas_object_geometry_get(b->img, &x, &y, &w, &h);
    if (gl_avail)
