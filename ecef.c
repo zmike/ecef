@@ -100,6 +100,10 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
      elm_cnp_selection_get(ec->win, ELM_SEL_TYPE_CLIPBOARD, ELM_SEL_FORMAT_TEXT, paste_url, ec);
    else if ((!strcmp(ev->key, "F5")) || ((!strcmp(ev->key, "r")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL)))
      browser_reload(ec->current_page->browser);
+   else if ((!strcmp(ev->key, "t")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
+     {
+        browser_new(ec, "about:blank");
+     }
    else if ((!strcmp(ev->key, "Left")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
      {
         if (ec->current_page->can_back)
