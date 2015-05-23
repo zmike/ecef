@@ -13,12 +13,55 @@ collections {
       script {
          public urlbar_changed = 0;
          public urlbar_visible = 0;
+         public pagelist_visible = 0;
+         public pagelist_locked = 0;
+
+         public message(Msg_Type:type, id, ...) {
+            if (type == MSG_INT_SET) {
+               new x, y, xx, yy;
+
+               x = getarg(2);
+               y = getarg(3);
+               xx = getarg(4);
+               yy = getarg(5);
+
+               custom_state(PART:"ecef.swallow.browser", "default", 0.0);
+               set_state_val(PART:"ecef.swallow.browser", STATE_REL1_OFFSET, x, y);
+               set_state_val(PART:"ecef.swallow.browser", STATE_REL2_OFFSET, -xx, -yy);
+               set_state(PART:"ecef.swallow.browser", "custom", 0.0);
+            }
+         }
       }
       parts {
          rect { "base";
             desc { color: 0 0 0 255; }
          }
-         swallow { "ecef.swallow.browser"; mouse; }
+         swallow { "ecef.swallow.swap";
+            desc {}
+            desc { "swapped";
+               rel1.relative: 1 0;
+               rel2.relative: 2 1;
+            }
+         }
+         program { signal: "ecef,browser,swap"; source: "ecef";
+            action: STATE_SET "default";
+            target: "ecef.swallow.swap";
+            sequence {
+               action: STATE_SET "swapped";
+               target: "ecef.swallow.swap";
+               transition: LINEAR 0.3;
+            }
+         }
+         swallow { "ecef.swallow.browser"; mouse;
+            desc {
+               link.base: "ecef,browser,swap" "ecef";
+               link.transition: LINEAR 0.3;
+               link.after: "post_swap";
+               program { "post_swap";
+                  action: SIGNAL_EMIT "ecef,browser,swapped" "ecef";
+               }
+            }
+         }
          rect { "urlbar_fader";
             desc {
                rel.to_y: "ecef.swallow.urlbar";
@@ -50,6 +93,8 @@ collections {
                rel.to_y: "ecef.swallow.urlbar";
             }
          }
+
+         // URLBAR
          image { "urlbar_border";
             desc {
                image.normal: "box_glow.png";

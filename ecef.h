@@ -290,6 +290,7 @@ typedef struct Browser
    Eina_Stringshare *title;
    Eina_Stringshare *url;
    Elm_Object_Item *it;
+   Evas_Object *it_clone; //pagelist clone
    GLuint program;
    GLuint vao;
    GLuint vbo;
@@ -311,6 +312,7 @@ typedef struct Browser
    Eina_Bool can_back : 1;
    Eina_Bool can_forward : 1;
    Eina_Bool loading : 1;
+   Eina_Bool swapping : 1;
 } Browser;
 
 typedef void (*Browser_Clone_Update_Cb)(Browser *b, Evas_Object *img);
@@ -332,6 +334,10 @@ typedef struct ECef_Client
    cef_window_info_t *window_info;
    cef_browser_settings_t *browser_settings;
    Eina_Bool urlbar_changed : 1;
+   Eina_Bool pending_page : 1;
+   Eina_Bool need_resize : 1;
+   Eina_Bool urlbar_visible : 1;
+   Eina_Bool pagelist_visible : 1;
 } ECef_Client;
 
 

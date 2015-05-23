@@ -49,16 +49,7 @@ browser_page_del(Browser *b, Evas_Object *obj EINA_UNUSED)
 static Evas_Object *
 browser_page_content_get(Browser *b, Evas_Object *obj, const char *part)
 {
-   Evas_Object *ly, *img;
-
-   ly = elm_layout_add(obj);
-   elm_layout_theme_set(ly, "layout", "ecef", "dummy");
-   if (browser_get_client(b->browser)->current_page == b)
-     img = render_image_clone(b);
-   else
-     img = b->img;
-   elm_object_content_set(ly, img);
-   return ly;
+   return b->it_clone = render_image_clone(b);
 }
 
 static void
@@ -115,6 +106,7 @@ urlbar_visible(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSE
 
    if (!ec->urlbar_changed)
      elm_object_focus_set(ec->urlbar, 1);
+   ec->urlbar_visible = 1;
 }
 
 static void
@@ -122,7 +114,7 @@ urlbar_hidden(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED
 {
    ECef_Client *ec = d;
 
-   ec->urlbar_changed = 0;
+   ec->urlbar_visible = ec->urlbar_changed = 0;
 }
 
 static void
@@ -148,16 +140,68 @@ urlbar_activate(ECef_Client *ec, ...)
 }
 
 static void
+pagelist_activated(ECef_Client *ec, Evas_Object *obj EINA_UNUSED, Elm_Object_Item *it)
+{
+   Browser *b;
+   int x, y, w, h, bx, by;
+   Edje_Message_Int_Set *msg;
+
+   b = elm_object_item_data_get(it);
+   if (ec->current_page == b) return;
+
+   if (!gl_avail)
+     {
+        browser_set(ec, b);
+        return;
+     }
+   evas_object_geometry_get(b->it_clone, &x, &y, &w, &h);
+   msg = alloca(sizeof(Edje_Message_Int_Set) + (sizeof(int) * 3));
+   msg->count = 4;
+   msg->val[0] = x;
+   msg->val[1] = y;
+   evas_object_geometry_get(ec->current_page->img, &bx, &by, NULL, NULL);
+   msg->val[2] = ec->current_page->w - ((x - bx) + w);
+   msg->val[3] = ec->current_page->h - ((y - by) + h);
+   edje_object_message_send(elm_layout_edje_get(ec->layout), EDJE_MESSAGE_INT_SET, 0, msg);
+   b->swapping = 1;
+   browser_set(ec, b);
+}
+
+static void
 pagelist_unrealized(ECef_Client *ec, Evas_Object *obj EINA_UNUSED, Elm_Object_Item *it)
 {
-   Evas_Object *ly;
+   Browser *b;
 
-   /* only save the content if it's not the current page's clone
-    * nobody cares about clones
-    */
-   if (elm_object_item_data_get(it) != ec->current_page) return;
-   ly = elm_object_item_part_content_get(it, "ecef.swallow.view");
-   elm_object_content_unset(ly);
+   b = elm_object_item_data_get(it);
+   b->it_clone = NULL;
+}
+
+static void
+pagelist_visible(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED, const char *src EINA_UNUSED)
+{
+   ECef_Client *ec = d;
+
+   ec->pagelist_visible = 1;
+}
+
+static void
+pagelist_hidden(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED, const char *src EINA_UNUSED)
+{
+   ECef_Client *ec = d;
+
+   ec->pagelist_visible = 0;
+}
+
+static void
+page_swapped(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED, const char *src EINA_UNUSED)
+{
+   ECef_Client *ec = d;
+
+   if (ec->need_resize)
+     browser_resize(ec);
+   ec->current_page->swapping = 0;
+   evas_object_del(elm_object_part_content_unset(ec->layout, "ecef.swallow.swap"));
+   elm_object_part_content_set(ec->layout, "ecef.swallow.browser", ec->current_page->img);
 }
 
 void
@@ -176,6 +220,7 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    int id, w, h;
    Browser *b;
    cef_browser_host_t *host;
+   Eina_Bool first;
 
    id = browser->get_identifier(browser);
    host = browser_get_host(browser);
@@ -185,17 +230,24 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    render_image_new(ec, b, host, w, h);
    eina_hash_add(ec->browsers, &id, b);
    b->it = elm_gengrid_item_append(ec->pagelist, &browser_itc, b, NULL, NULL);
-   if (ec->current_page) return;
+   first = !ec->current_page;
+   if (ec->pending_page)
+     browser_set(ec, b);
+   ec->pending_page = 0;
+   if (!first) return;
    /* first browser creation: set up callbacks */
-   browser_set(ec, b);
    eina_log_domain_level_set("evas_main", EINA_LOG_LEVEL_ERR);
    browser_buttons_add(ec, browser);
    evas_object_event_callback_add(ec->layout, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)browser_resize, ec);
    elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,visible", "ecef", urlbar_visible, ec);
    elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,hidden", "ecef", urlbar_hidden, ec);
+   elm_layout_signal_callback_add(ec->layout, "ecef,pagelist,visible", "ecef", pagelist_visible, ec);
+   elm_layout_signal_callback_add(ec->layout, "ecef,pagelist,hidden", "ecef", pagelist_hidden, ec);
+   elm_layout_signal_callback_add(ec->layout, "ecef,browser,swapped", "ecef", page_swapped, ec);
    evas_object_smart_callback_add(ec->urlbar, "activated", (Evas_Smart_Cb)urlbar_activate, ec);
    evas_object_smart_callback_add(ec->urlbar, "changed,user", (Evas_Smart_Cb)urlbar_changed, ec);
    evas_object_smart_callback_add(ec->pagelist, "unrealized", (Evas_Smart_Cb)pagelist_unrealized, ec);
+   evas_object_smart_callback_add(ec->pagelist, "activated", (Evas_Smart_Cb)pagelist_activated, ec);
 }
 
 void
@@ -220,6 +272,7 @@ browser_new(ECef_Client *ec, const char *url)
 
    cef_string_from_utf8(url, strlen(url), &u);
    cef_browser_host_create_browser(ec->window_info, &ec->client, &u, ec->browser_settings, NULL);
+   ec->pending_page = 1;
    cef_string_clear(&u);
 }
 
@@ -331,14 +384,21 @@ browser_set(ECef_Client *ec, Browser *b)
              ecore_x_window_hide(host->get_window_handle(host));
              ecore_x_netwm_window_state_set(host->get_window_handle(host), state, 1);
           }
+        if (b->swapping)
+          elm_object_part_content_set(ec->layout, "ecef.swallow.swap", render_image_clone(ec->current_page));
      }
    ec->current_page = b;
-   elm_object_part_content_set(ec->layout, "ecef.swallow.browser", b->img);
+   if (b->swapping)
+     elm_object_part_content_set(ec->layout, "ecef.swallow.browser", render_image_clone(b));
+   else
+     elm_object_part_content_set(ec->layout, "ecef.swallow.browser", b->img);
    evas_object_size_hint_aspect_set(b->img, EVAS_ASPECT_CONTROL_NONE, -1, -1);
    browser_window_title_update(ec);
    elm_entry_entry_set(ec->urlbar, b->url);
    host = browser_get_host(ec->current_page->browser);
    //host->set_focus(host, 1);
+   if (b->swapping)
+     elm_object_signal_emit(ec->layout, "ecef,browser,swap", "ecef");
    if (gl_avail) return;
    edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.swallow.browser", &x, &y, &w, &h);
    ecore_x_window_move(host->get_window_handle(host), x, y);
