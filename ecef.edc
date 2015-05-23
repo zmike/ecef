@@ -344,11 +344,14 @@ collections {
                rel2.offset: -4 -1;
             }
          }
-         group { "ecef.text.title";
+         text { "ecef.text.title";
             desc {
-               align: 0.0 1.0;
+               align: 0.0 0.0;
                rel1.relative: 0 1;
-               rel2.offset: -4 -4;
+               rel1.offset: 1 -9;
+               rel2.offset: -4 -9;
+               text { font: "Sans"; size: 12;
+               }
             }
          }
          rect { "events"; mouse;
