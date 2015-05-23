@@ -1,6 +1,28 @@
 #include "ecef.h"
 #include <Ecore_X.h>
 
+static void
+browser_resize(ECef_Client *ec, ...)
+{
+   cef_browser_host_t *host;
+
+   host = browser_get_host(ec->current_page->browser);
+   if (gl_avail)
+     host->was_resized(host);
+   else
+     {
+        int x, y, w, h;
+
+        if (ec->current_page->swapping)
+          {
+             ec->need_resize = 1;
+             return;
+          }
+        edje_object_part_geometry_get(ec->layout, "ecef.swallow.browser", &x, &y, &w, &h);
+        ecore_x_window_move_resize(host->get_window_handle(host), x, y, w, h);
+     }
+}
+
 static char *
 browser_page_text_get(Browser *b, Evas_Object *obj EINA_UNUSED, const char *part)
 {
@@ -168,6 +190,7 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    browser_set(ec, b);
    eina_log_domain_level_set("evas_main", EINA_LOG_LEVEL_ERR);
    browser_buttons_add(ec, browser);
+   evas_object_event_callback_add(ec->layout, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)browser_resize, ec);
    elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,visible", "ecef", urlbar_visible, ec);
    elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,hidden", "ecef", urlbar_hidden, ec);
    evas_object_smart_callback_add(ec->urlbar, "activated", (Evas_Smart_Cb)urlbar_activate, ec);
