@@ -90,6 +90,8 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
      }
    else if ((!strcmp(ev->key, "F8")) && (!ev->modifiers))
      browser_urlbar_show(ec, 0);
+   else if ((!strcmp(ev->key, "F4")) && (!ev->modifiers))
+     browser_pagelist_show(ec);
    else if ((!strcasecmp(ev->key, "v")) && (ev->modifiers & (ECORE_EVENT_MODIFIER_CTRL | ECORE_EVENT_MODIFIER_SHIFT)))
      elm_cnp_selection_get(ec->win, ELM_SEL_TYPE_CLIPBOARD, ELM_SEL_FORMAT_TEXT, paste_url, ec);
    else if ((!strcmp(ev->key, "F5")) || ((!strcmp(ev->key, "r")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL)))
@@ -239,21 +241,11 @@ main(int argc, char *argv[])
    elm_layout_theme_set(ec->layout, "layout", "ecef", "base");
    evas_object_show(ec->layout);
 
-   ec->pagelist = elm_genlist_add(win);
-   //evas_object_smart_callback_add(o, "longpressed", queue_list_item_longpress, NULL);
-   //evas_object_event_callback_add(o, EVAS_CALLBACK_MOUSE_DOWN, queue_list_item_click, NULL);
-   //evas_object_smart_callback_add(o, "realized", queue_list_item_realize, NULL);
-   //evas_object_smart_callback_add(o, "unrealized", queue_list_item_unrealize, NULL);
-   //evas_object_smart_callback_add(o, "unselected", queue_list_item_unselect, NULL);
-   //evas_object_smart_callback_add(o, "clicked,double", queue_list_double_click, NULL);
-   //evas_object_smart_callback_add(o, "scroll,anim,stop", queue_list_scroll_stop, NULL);
-   //evas_object_event_callback_add(o, EVAS_CALLBACK_KEY_DOWN, queue_list_key_down, NULL);
-   elm_genlist_multi_select_mode_set(ec->pagelist, ELM_OBJECT_MULTI_SELECT_MODE_DEFAULT);
-   elm_genlist_homogeneous_set(ec->pagelist, EINA_TRUE);
-   elm_genlist_multi_select_set(ec->pagelist, 1);
+   ec->pagelist = elm_gengrid_add(win);
+   elm_gengrid_item_size_set(ec->pagelist, 100, 120);
+   elm_object_style_set(ec->pagelist, "pagelist");
    elm_scroller_bounce_set(ec->pagelist, 0, 0);
    elm_scroller_policy_set(ec->pagelist, ELM_SCROLLER_POLICY_AUTO, ELM_SCROLLER_POLICY_AUTO);
-   elm_genlist_mode_set(ec->pagelist, ELM_LIST_COMPRESS);
    elm_object_part_content_set(ec->layout, "ecef.swallow.pagelist", ec->pagelist);
 
    ec->urlbar = elm_entry_add(win);

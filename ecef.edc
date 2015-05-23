@@ -123,15 +123,15 @@ collections {
          }
          swallow { "ecef.swallow.pagelist"; mouse;
             desc { hid; align: 0 0;
-               rel1.relative: -1 0;
-               rel2.relative: 0 1;
+               rel1.relative: 1 0;
+               rel2.relative: 2 1;
                link.base: "ecef,pagelist,hide" "ecef";
-               link.transition: LINEAR 0.2;
+               link.transition: LINEAR 0.4;
             }
             desc { "visible"; align: 0 0;
-               rel2.relative: 0.3 1;
+               rel1.relative: 0.6 0;
                link.base: "ecef,pagelist,show" "ecef";
-               link.transition: LINEAR 0.2;
+               link.transition: LINEAR 0.4;
             }
          }
          rect { "top_events"; mouse; repeat; scale;
@@ -275,6 +275,92 @@ collections {
             target: "clip";
             transition: LINEAR 0.2 CURRENT;
          }
+      }
+   }
+   group { "elm/gengrid/item/default/pagelist"; nomouse;
+      data.item: "selectraise" "on";
+      data.item: "texts" "ecef.text.title";
+      data.item: "contents" "ecef.swallow.view";
+      parts {
+         rect { "selection";
+            scale: 1;
+            desc {
+               color: 222 222 222 0;
+               hid;
+            }
+            desc { "selected";
+               inherit: "default";
+               color: 222 222 222 160;
+               vis;
+            }
+         }
+         program {
+            signal: "elm,state,selected"; source: "elm";
+            action: STATE_SET "selected";
+            target: "selection";
+            transition: LINEAR 0.15;
+         }
+         program {
+            signal: "elm,state,unselected"; source: "elm";
+            action: STATE_SET "default";
+            target: "selection";
+            transition: LINEAR 0.15;
+         }
+         rect { "mouse_indicator";
+            scale: 1;
+            desc {
+               color: 52 153 255 0;
+               hid;
+            }
+            desc { "active";
+               inherit: "default";
+               color: 52 153 255 160;
+               vis;
+            }
+         }
+         program {
+            signal: "mouse,in"; source: "events";
+            action: STATE_SET "active";
+            target: "mouse_indicator";
+            transition: LINEAR 0.15;
+         }
+         program {
+            signal: "mouse,out"; source: "events";
+            action: STATE_SET "default";
+            target: "mouse_indicator";
+            transition: LINEAR 0.15;
+         }
+         rect { "clip";
+            desc {
+               rel1.to: "ecef.swallow.view";
+               rel2.to: "ecef.swallow.view";
+            }
+         }
+         swallow { "ecef.swallow.view"; clip: "clip";
+            desc {
+               rel1.offset: 3 3;
+               rel2.to_y: "ecef.text.title";
+               rel2.relative: 1 0;
+               rel2.offset: -4 -1;
+            }
+         }
+         group { "ecef.text.title";
+            desc {
+               align: 0.0 1.0;
+               rel1.relative: 0 1;
+               rel2.offset: -4 -4;
+            }
+         }
+         rect { "events"; mouse;
+            desc {
+               color: 0 0 0 0;
+            }
+         }
+      }
+   }
+   group { "elm/layout/ecef/dummy";
+      parts {
+         swallow { "elm.swallow.content"; }
       }
    }
 #define IC(Name, File, Min, Max) \

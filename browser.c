@@ -24,6 +24,21 @@ browser_page_del(Browser *b, Evas_Object *obj EINA_UNUSED)
    free(b);
 }
 
+static Evas_Object *
+browser_page_content_get(Browser *b, Evas_Object *obj, const char *part)
+{
+   Evas_Object *ly, *img;
+
+   ly = elm_layout_add(obj);
+   elm_layout_theme_set(ly, "layout", "ecef", "dummy");
+   if (browser_get_client(b->browser)->current_page == b)
+     img = render_image_clone(b);
+   else
+     img = b->img;
+   elm_object_content_set(ly, img);
+   return ly;
+}
+
 static void
 browser_buttons_add(ECef_Client *ec, cef_browser_t *browser)
 {
@@ -110,16 +125,30 @@ urlbar_activate(ECef_Client *ec, ...)
    cef_string_clear(&str);
 }
 
+static void
+pagelist_unrealized(ECef_Client *ec, Evas_Object *obj EINA_UNUSED, Elm_Object_Item *it)
+{
+   Evas_Object *ly;
+
+   /* only save the content if it's not the current page's clone
+    * nobody cares about clones
+    */
+   if (elm_object_item_data_get(it) != ec->current_page) return;
+   ly = elm_object_item_part_content_get(it, "ecef.swallow.view");
+   elm_object_content_unset(ly);
+}
+
 void
 on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_t *browser)
 {
-   static Elm_Genlist_Item_Class browser_itc = {
+   static Elm_Gengrid_Item_Class browser_itc = {
       .item_style = "default",
       .func = {
-           .text_get = (Elm_Genlist_Item_Text_Get_Cb)browser_page_text_get,
-           .del = (Elm_Genlist_Item_Del_Cb)browser_page_del
+           .content_get = (Elm_Gengrid_Item_Content_Get_Cb)browser_page_content_get,
+           .text_get = (Elm_Gengrid_Item_Text_Get_Cb)browser_page_text_get,
+           .del = (Elm_Gengrid_Item_Del_Cb)browser_page_del
       },
-      .version = ELM_GENLIST_ITEM_CLASS_VERSION
+      .version = ELM_GENGRID_ITEM_CLASS_VERSION
    };
    ECef_Client *ec = browser_get_client(browser);
    int id, w, h;
@@ -133,7 +162,7 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.swallow.browser", NULL, NULL, &w, &h);
    render_image_new(ec, b, host, w, h);
    eina_hash_add(ec->browsers, &id, b);
-   b->it = elm_genlist_item_append(ec->pagelist, &browser_itc, b, NULL, ELM_GENLIST_ITEM_NONE, NULL, NULL);
+   b->it = elm_gengrid_item_append(ec->pagelist, &browser_itc, b, NULL, NULL);
    if (ec->current_page) return;
    /* first browser creation: set up callbacks */
    browser_set(ec, b);
@@ -142,6 +171,7 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,hidden", "ecef", urlbar_hidden, ec);
    evas_object_smart_callback_add(ec->urlbar, "activated", (Evas_Smart_Cb)urlbar_activate, ec);
    evas_object_smart_callback_add(ec->urlbar, "changed,user", (Evas_Smart_Cb)urlbar_changed, ec);
+   evas_object_smart_callback_add(ec->pagelist, "unrealized", (Evas_Smart_Cb)pagelist_unrealized, ec);
 }
 
 void
