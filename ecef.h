@@ -369,6 +369,7 @@ Evas_Object *button_add(Evas_Object *parent, const char *icon, const char *text,
 void on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_t *browser);
 void browser_new(ECef_Client *ec, const char *url);
 Browser *browser_get(ECef_Client *ec, cef_browser_t *browser);
+char *browser_page_string_get(Browser *b);
 void browser_window_title_update(ECef_Client *ec);
 void browser_set(ECef_Client *ec, Browser *b);
 void browser_back(cef_browser_t *browser, ...);

@@ -26,7 +26,7 @@ browser_resize(ECef_Client *ec, ...)
 static char *
 browser_page_text_get(Browser *b, Evas_Object *obj EINA_UNUSED, const char *part)
 {
-   return strdup(b->title ?: "");
+   return strdup(browser_page_string_get(b));
 }
 
 static void
@@ -279,26 +279,35 @@ browser_pagelist_hide(ECef_Client *ec)
    elm_layout_signal_emit(ec->layout, "ecef,pagelist,hide", "ecef");
 }
 
+char *
+browser_page_string_get(Browser *b)
+{
+   static char buf[4096];
+
+   if (b->title)
+     snprintf(buf, sizeof(buf), "%s", b->title);
+   else if (b->url)
+     {
+        char *p;
+
+        p = strrchr(b->url, '/');
+        /* probably image */
+        if (p)
+          snprintf(buf, sizeof(buf), "%s", p + 1);
+        else
+          snprintf(buf, sizeof(buf), "%s", b->url);
+     }
+   else
+     strcpy(buf, "Blank");
+   return &buf[0];
+}
+
 void
 browser_window_title_update(ECef_Client *ec)
 {
    char buf[4096] = {0};
 
-   if (ec->current_page->title)
-     snprintf(buf, sizeof(buf), "%s - Servo", ec->current_page->title);
-   else if (ec->current_page->url)
-     {
-        char *p;
-
-        p = strrchr(ec->current_page->url, '/');
-        /* probably image */
-        if (p)
-          snprintf(buf, sizeof(buf), "%s - Servo", p + 1);
-        else
-          snprintf(buf, sizeof(buf), "%s - Servo", ec->current_page->url);
-     }
-   else
-     strcpy(buf, "Blank - Servo");
+   snprintf(buf, sizeof(buf), "%s - Servo", browser_page_string_get(ec->current_page));
    elm_win_title_set(ec->win, buf);
 }
 
