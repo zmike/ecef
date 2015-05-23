@@ -6,6 +6,10 @@ on_console_message(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *brows
    ECef_Client *ec;
 
    ec = browser_get_client(browser);
+   cef_string_utf8_t u8 = {0};
+   if (message)
+     cef_string_utf16_to_utf8(message->str, message->length, &u8);
+   cef_string_utf8_clear(&u8);
    return 0;
 }
 
@@ -13,6 +17,10 @@ static void
 on_status_message(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *browser, const cef_string_t *text)
 {
    ECef_Client *ec;
+   cef_string_utf8_t u8 = {0};
+   if (text)
+     cef_string_utf16_to_utf8(text->str, text->length, &u8);
+   cef_string_utf8_clear(&u8);
 
    ec = browser_get_client(browser);
 }
@@ -23,6 +31,11 @@ on_tooltip(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *browser, cef_
    ECef_Client *ec;
 
    ec = browser_get_client(browser);
+   cef_string_utf8_t u8 = {0};
+   if (text)
+     cef_string_utf16_to_utf8(text->str, text->length, &u8);
+   cef_string_utf8_clear(&u8);
+
    return 0;
 }
 
