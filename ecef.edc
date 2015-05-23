@@ -121,19 +121,62 @@ collections {
                action: SIGNAL_EMIT "ecef,urlbar,hidden" "ecef";
             }
          }
-         swallow { "ecef.swallow.pagelist"; mouse;
-            desc { hid; align: 0 0;
-               rel1.relative: 1 0;
-               rel2.relative: 2 1;
-               link.base: "ecef,pagelist,hide" "ecef";
-               link.transition: LINEAR 0.4;
-            }
-            desc { "visible"; align: 0 0;
-               rel1.relative: 0.6 0;
-               link.base: "ecef,pagelist,show" "ecef";
-               link.transition: LINEAR 0.4;
+
+         // PAGELIST
+         rect { "pagelist_fader";
+            desc {
+               rel.to: "ecef.swallow.pagelist";
+               color: 0 0 0 192;
             }
          }
+         swallow { "ecef.swallow.pagelist"; mouse;
+            desc { hid; align: 0 0;
+               rel1.relative: -1 0;
+               rel2.relative: 0 1;
+            }
+            desc { "visible"; align: 0 0;
+               rel2.relative: 0.4 1;
+            }
+         }
+         program { "show_pagelist";
+            signal: "ecef,pagelist,show"; source: "ecef";
+            script {
+               set_int(pagelist_locked, 1);
+               stop_program(get_program_id("hide_pagelist_delayed"));
+            }
+            after: "show_pagelist_begin";
+         }
+         program { "show_pagelist_begin";
+            script {
+               set_int(pagelist_visible, 1);
+            }
+            sequence {
+               action: STATE_SET "visible";
+               transition: LINEAR 0.4;
+               target: "ecef.swallow.pagelist";
+               action: SIGNAL_EMIT "ecef,pagelist,visible" "ecef";
+            }
+         }
+         program { "hide_pagelist_delayed";
+            in: 3.0 0;
+            after: "hide_pagelist";
+         }
+         program { "hide_pagelist";
+            filter: "ecef.swallow.pagelist" "visible";
+            signal: "ecef,pagelist,hide"; source: "ecef";
+            script {
+               set_int(pagelist_visible, 0);
+               set_int(pagelist_locked, 0);
+            }
+            sequence {
+               action: STATE_SET "default";
+               transition: LINEAR 0.4;
+               target: "ecef.swallow.pagelist";
+               action: SIGNAL_EMIT "ecef,pagelist,hidden" "ecef";
+            }
+         }
+
+         // EVENTAREAS
          rect { "top_events"; mouse; repeat; scale;
             desc {
                min: 0 TOP_EVENT_SIZE;
@@ -165,7 +208,36 @@ collections {
                   run_program(get_program_id("hide_urlbar_delayed"));
             }
          }
-
+         rect { "left_events"; mouse; repeat; scale;
+            desc {
+               min: LEFT_EVENT_SIZE 0;
+               max: LEFT_EVENT_SIZE -1;
+               align: 0 0.5;
+               fixed: 1 0;
+               color: 0 0 0 0;
+               rel2.relative: 0 1;
+            }
+            desc { "hint_activate"; inherit: "default";
+               color: 52 153 255 100;
+            }
+            desc { "hint_deactivate"; inherit: "default";
+               color: 154 25 25 100;
+            }
+         }
+         program { signal: "mouse,in"; source: "left_events";
+            script {
+               stop_program(get_program_id("hide_pagelist_delayed"));
+               if (!get_int(pagelist_visible)) {
+                  run_program(get_program_id("show_pagelist_begin"));
+               }
+            }
+         }
+         program { signal: "mouse,out"; source: "ecef.swallow.pagelist";
+            script {
+               if (!get_int(pagelist_locked))
+                  run_program(get_program_id("hide_pagelist_delayed"));
+            }
+         }
          rect { "loading_clip";
             desc {
                color: 255 255 255 0;
