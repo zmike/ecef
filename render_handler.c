@@ -177,6 +177,17 @@ render_image_mouse_wheel(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Event_
 
    host = evas_object_data_get(obj, "browser_host");
    mod = modifiers_get(ev->modifiers);
+   if (mod && (!(mod ^ EVENTFLAG_CONTROL_DOWN))) //only ctrl held: zoom
+     {
+        double delta = 0;
+
+        if (ev->z < 0)
+          delta = 0.1;
+        if (ev->z > 0)
+          delta = -0.1;
+        host->set_zoom_level(host, host->get_zoom_level(host) + delta);
+        return;
+     }
    evas_object_geometry_get(obj, &x, &y, NULL, NULL);
    event.x = ev->canvas.x - x, event.y = ev->canvas.y - y;
    event.modifiers = mod;
