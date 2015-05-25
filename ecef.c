@@ -225,7 +225,8 @@ main(int argc, char *argv[])
    ec->browser_settings = &browser_settings;
    ec->window_info = &window_info;
 
-   if (gl_avail)
+   servo = !!dlsym(NULL, "servo_test");
+   if (gl_avail && servo)
      ecore_x_init_from_display(cef_get_xdisplay());
 
    elm_init(argc, (char**)argv);
@@ -236,8 +237,6 @@ main(int argc, char *argv[])
    win = elm_win_util_standard_add("ecef", "Loading");
    evas_object_resize(win, 640, 480);
    elm_win_autodel_set(win, 1);
-
-   servo = !!dlsym(NULL, "servo_test");
 
    ec->win = win;
 
