@@ -359,13 +359,13 @@ browser_get_client(cef_browser_t *browser)
 static inline int
 modifiers_get(Evas_Modifier *m) {
   int modifiers = 0;
-  if (evas_key_modifier_is_set(m, "Shift_L") || evas_key_modifier_is_set(m, "Shift_R"))
+  if (evas_key_modifier_is_set(m, "Shift"))
     modifiers |= EVENTFLAG_SHIFT_DOWN;
   if (evas_key_modifier_is_set(m, "Caps_Lock"))
     modifiers |= EVENTFLAG_CAPS_LOCK_ON;
-  if (evas_key_modifier_is_set(m, "Control_L") || evas_key_modifier_is_set(m, "Control_R"))
+  if (evas_key_modifier_is_set(m, "Control"))
     modifiers |= EVENTFLAG_CONTROL_DOWN;
-  if (evas_key_modifier_is_set(m, "Alt_L") || evas_key_modifier_is_set(m, "Alt_R"))
+  if (evas_key_modifier_is_set(m, "Alt"))
     modifiers |= EVENTFLAG_ALT_DOWN;
   return modifiers;
 }
