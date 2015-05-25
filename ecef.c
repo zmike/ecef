@@ -182,6 +182,7 @@ main(int argc, char *argv[])
    int ex;
    Evas_Object *win;
    ECef_Client *ec;
+   Eina_Bool windowed;
 
    eina_init();
    ecore_event_init();
@@ -203,11 +204,11 @@ main(int argc, char *argv[])
    eldbus_init();
    ecore_main_loop_glib_integrate();
 
-   gl_avail = !getenv("ECEF_WINDOWED");
+   windowed = !!getenv("ECEF_WINDOWED");
    memset(&settings, 0, sizeof(cef_settings_t));
    memset(&browser_settings, 0, sizeof(cef_browser_settings_t));
    settings.size = sizeof(cef_settings_t);
-   settings.windowless_rendering_enabled = gl_avail;
+   settings.windowless_rendering_enabled = !windowed;
    browser_settings.size = sizeof(cef_browser_settings_t);
    if (!cef_initialize(&args, &settings, app, NULL))
      return -1;
@@ -216,7 +217,7 @@ main(int argc, char *argv[])
    client = CEF_NEW(ECef_Client);
    ec = (void*)client;
    clients = eina_list_append(clients, ec);
-   if (gl_avail)
+   if (!windowed)
      client->get_render_handler = client_render_handler_get;
    client->get_display_handler = client_display_handler_get;
    client->get_load_handler = client_load_handler_get;
@@ -226,7 +227,7 @@ main(int argc, char *argv[])
    ec->window_info = &window_info;
 
    servo = !!dlsym(NULL, "servo_test");
-   if (gl_avail && servo)
+   if ((!windowed) && servo)
      ecore_x_init_from_display(cef_get_xdisplay());
 
    elm_init(argc, (char**)argv);
@@ -261,8 +262,8 @@ main(int argc, char *argv[])
    elm_object_part_content_set(ec->layout, "ecef.swallow.urlbar", ec->urlbar);
 
    evas_object_show(win);
-   window_info.windowless_rendering_enabled = gl_avail;
-   if (!gl_avail)
+   window_info.windowless_rendering_enabled = !windowed;
+   if (windowed)
      {
         int x, y, w, h;
 
@@ -277,6 +278,7 @@ main(int argc, char *argv[])
 
    if (!servo)
      ecore_timer_add(0.01, timer, NULL);
+   gl_avail = !!strstr(ecore_evas_engine_name_get(ecore_evas_ecore_evas_get(evas_object_evas_get(win))), "gl");
    ecore_main_loop_begin();
 
    return 0;
