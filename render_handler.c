@@ -352,6 +352,8 @@ render_image_clone(Browser *b)
    evas_object_event_callback_add(img, EVAS_CALLBACK_DEL, render_image_clone_del, b);
    if (ec->clone_update_cb)
      ec->clone_update_cb(b, img);
+   else if (!gl_avail)
+     evas_object_image_source_set(elm_image_object_get(img), elm_image_object_get(b->img));
    b->clones = eina_list_append(b->clones, img);
    return img;
 }
