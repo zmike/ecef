@@ -360,8 +360,13 @@ void
 browser_window_title_update(ECef_Client *ec)
 {
    char buf[4096] = {0};
+   const char *browser[] =
+   {
+      "Chromium Embedded",
+      "Servo"
+   };
 
-   snprintf(buf, sizeof(buf), "%s - Servo", browser_page_string_get(ec->current_page));
+   snprintf(buf, sizeof(buf), "%s - %s", browser_page_string_get(ec->current_page), browser[servo]);
    elm_win_title_set(ec->win, buf);
 }
 
