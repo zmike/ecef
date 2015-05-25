@@ -7,12 +7,11 @@ KeyboardCode GetWindowsKeyCodeWithoutLocation(KeyboardCode key_code);
 KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym);
 
 void render_image_gl_setup(Browser *b, int w, int h);
-void paint_gl(ECef_Client *ec, Browser *b, cef_paint_element_type_t type, size_t dirtyRectsCount, cef_rect_t const *dirtyRects, const void *buffer, int width, int height);
+void render_image_gl_paint(Browser *b);
 #ifdef HAVE_SERVO
-void render_image_servo_paint(Browser *b);
-void render_image_servo_present(cef_render_handler_t *handler, cef_browser_t *browser);
-void render_image_servo_setup(Browser *b, int w, int h);
+void render_image_gl_present(cef_render_handler_t *handler, cef_browser_t *browser);
 #endif
+void render_image_gl_setup(Browser *b, int w, int h);
 
 static int
 get_root_screen_rect(cef_render_handler_t *self, cef_browser_t *browser, cef_rect_t *rect)
@@ -63,12 +62,14 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
    img = b->img;
    if (ec->current_page != b)
      evas_object_size_hint_aspect_set(img, EVAS_ASPECT_CONTROL_HORIZONTAL, b->w, b->h);
+   if (gl_avail && (!servo))
+     {
+        free(b->buffer);
+        b->buffer = malloc(b->w * b->h * 4);
+        memcpy(b->buffer, buffer, b->w * b->h * 4);
+     }
    if (gl_avail)
-#ifdef HAVE_SERVO
-     render_image_servo_paint(b);
-#else
-     paint_gl(ec, b, type, dirtyRectsCount, dirtyRects, buffer, width, height);
-#endif
+     render_image_gl_paint(b);
    else
      {
         o = elm_image_object_get(img);
@@ -94,7 +95,7 @@ init_handler(ECef_Client *ec)
    render_handler->get_view_rect = get_view_rect;
    render_handler->get_screen_point = get_screen_point;
 #ifdef HAVE_SERVO
-   render_handler->on_present = render_image_servo_present;
+   render_handler->on_present = render_image_gl_present;
 #endif   
 }
 
@@ -306,13 +307,7 @@ render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, i
 
    if (gl_avail)
      {
-        b->img = i = elm_glview_version_add(ec->win,
-#ifdef HAVE_SERVO
-        EVAS_GL_GLES_2_X
-#else
-        EVAS_GL_GLES_3_X
-#endif
-        );
+        b->img = i = elm_glview_version_add(ec->win, EVAS_GL_GLES_2_X);
         if (!i) gl_avail = 0;
      }
    b->pw = b->w = w, b->ph = b->h = h;
@@ -324,11 +319,7 @@ render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, i
    if (ec->current_page == b)
      elm_object_part_content_set(ec->layout, "ecef.swallow.browser", i);
    if (gl_avail)
-#ifdef HAVE_SERVO
-     render_image_servo_setup(b, w, h);
-#else
      render_image_gl_setup(b, w, h);
-#endif
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_DOWN, (Evas_Object_Event_Cb)render_image_mouse_down, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_UP, (Evas_Object_Event_Cb)render_image_mouse_up, ec);
    evas_object_event_callback_add(i, EVAS_CALLBACK_MOUSE_MOVE, (Evas_Object_Event_Cb)render_image_mouse_move, ec);
@@ -354,8 +345,6 @@ render_image_clone(Browser *b)
 {
    Evas_Object *img;
    ECef_Client *ec;
-
-   if (!servo) return NULL; //temp
 
    ec = browser_get_client(b->browser);
    img = elm_image_add(ec->win);

@@ -297,17 +297,12 @@ typedef struct Browser
    GLuint vbo2;
    GLuint texture_id;
    void *buffer;
-#ifdef HAVE_SERVO
-   Evas_GL_Context *glctx;
    Evas_GL *gl;
-   Evas_GL_Surface *glsfc;
    Evas_GL_Config *glcfg;
-   Ecore_Job *gljob;
    GLuint fbo;
    GLuint tex;
    int pw, ph;
    Eina_List *clones;
-#endif
    int w, h;
    Eina_Bool can_back : 1;
    Eina_Bool can_forward : 1;
