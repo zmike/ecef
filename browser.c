@@ -182,6 +182,7 @@ pagelist_visible(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNU
    ECef_Client *ec = d;
 
    ec->pagelist_visible = 1;
+   elm_object_focus_set(ec->pagelist, 1);
 }
 
 static void
