@@ -456,6 +456,7 @@ collections {
          swallow { "ecef.swallow.view"; clip: "clip";
             desc {
                rel1.offset: 3 3;
+               aspect: 1 1; aspect_preference: SOURCE;
                rel2.to_y: "ecef.text.title";
                rel2.relative: 1 0;
                rel2.offset: -4 -1;
