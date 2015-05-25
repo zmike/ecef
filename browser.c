@@ -7,7 +7,7 @@ browser_resize(ECef_Client *ec, ...)
    cef_browser_host_t *host;
 
    host = browser_get_host(ec->current_page->browser);
-   if (gl_avail)
+   if (!windowed)
      host->was_resized(host);
    else
      {
@@ -149,7 +149,7 @@ pagelist_activated(ECef_Client *ec, Evas_Object *obj EINA_UNUSED, Elm_Object_Ite
    b = elm_object_item_data_get(it);
    if (ec->current_page == b) return;
 
-   if (!gl_avail)
+   if (windowed)
      {
         browser_set(ec, b);
         return;
@@ -380,7 +380,7 @@ browser_set(ECef_Client *ec, Browser *b)
           evas_object_hide(ec->current_page->img);
         host = browser_get_host(ec->current_page->browser);
         //host->set_focus(host, 0);
-        if (!gl_avail)
+        if (windowed)
           {
              ecore_x_window_hide(host->get_window_handle(host));
              ecore_x_netwm_window_state_set(host->get_window_handle(host), state, 1);

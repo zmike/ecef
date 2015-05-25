@@ -387,6 +387,7 @@ Evas_Object *render_image_clone(Browser *b);
 
 extern Eina_Bool servo;
 extern Eina_Bool gl_avail;
+extern Eina_Bool windowed;
 extern Eina_List *clients;
 
 # define E_LIST_HANDLER_APPEND(list, type, callback, data) \

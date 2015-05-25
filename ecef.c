@@ -10,6 +10,7 @@
 
 Eina_Bool servo;
 Eina_Bool gl_avail;
+Eina_Bool windowed;
 static Eina_List *handlers;
 
 Eina_List *clients;
@@ -182,7 +183,6 @@ main(int argc, char *argv[])
    int ex;
    Evas_Object *win;
    ECef_Client *ec;
-   Eina_Bool windowed;
 
    eina_init();
    ecore_event_init();
