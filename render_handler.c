@@ -55,15 +55,17 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
    size_t r;
    Browser *b;
    Eina_List *l;
+   Eina_Bool first;
 
    ec = browser_get_client(browser);
    b = browser_get(ec, browser);
+   first = (!b->pw) || (!b->ph);
    b->pw = b->w, b->ph = b->h;
    b->w = width, b->h = height;
    img = b->img;
    if (gl_avail && (!servo))
      {
-        if ((!b->buffer) || (b->w != b->pw) || (b->h != b->ph))
+        if (first || (b->w != b->pw) || (b->h != b->ph))
           {
              free(b->buffer);
              b->buffer = malloc(b->w * b->h * 4);
@@ -79,7 +81,7 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
         evas_object_image_data_copy_set(o, (void*)buffer);
         for (r = 0; r < dirtyRectsCount; r++)
           evas_object_image_data_update_add(o, dirtyRects[r].x, dirtyRects[r].y, dirtyRects[r].width, dirtyRects[r].height);
-        if ((b->w != b->pw) || (b->h != b->ph))
+        if (first || (b->w != b->pw) || (b->h != b->ph))
           eo_do(img, elm_obj_image_sizing_eval());
      }
    EINA_LIST_FOREACH(b->clones, l, o)
