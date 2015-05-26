@@ -101,12 +101,15 @@ browser_buttons_add(ECef_Client *ec, cef_browser_t *browser)
 }
 
 static void
-urlbar_visible(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED, const char *src EINA_UNUSED)
+urlbar_visible(void *d, ...)
 {
    ECef_Client *ec = d;
 
    if (!ec->urlbar_changed)
-     elm_object_focus_set(ec->urlbar, 1);
+     {
+        elm_object_focus_set(ec->urlbar, 1);
+        elm_entry_select_all(ec->urlbar);
+     }
    ec->urlbar_visible = 1;
 }
 
@@ -340,7 +343,7 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    eina_log_domain_level_set("evas_main", EINA_LOG_LEVEL_ERR);
    browser_buttons_add(ec, browser);
    evas_object_event_callback_add(ec->layout, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)browser_resize, ec);
-   elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,visible", "ecef", urlbar_visible, ec);
+   elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,visible", "ecef", (Edje_Signal_Cb)urlbar_visible, ec);
    elm_layout_signal_callback_add(ec->layout, "ecef,urlbar,hidden", "ecef", urlbar_hidden, ec);
    elm_layout_signal_callback_add(ec->layout, "ecef,pagelist,visible", "ecef", pagelist_visible, ec);
    elm_layout_signal_callback_add(ec->layout, "ecef,pagelist,hidden", "ecef", pagelist_hidden, ec);
@@ -404,7 +407,12 @@ browser_urlbar_show(ECef_Client *ec, Eina_Bool changed)
           elm_layout_signal_emit(ec->layout, "ecef,urlbar,change", "ecef");
      }
    else
-     elm_layout_signal_emit(ec->layout, "ecef,urlbar,show", "ecef");
+     {
+        if (ec->urlbar_visible)
+          urlbar_visible(ec);
+        else
+          elm_layout_signal_emit(ec->layout, "ecef,urlbar,show", "ecef");
+     }
    ec->urlbar_changed = changed;
 }
 
