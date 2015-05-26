@@ -8,7 +8,7 @@ on_console_message(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *brows
    ec = browser_get_client(browser);
    cef_string_utf8_t u8 = {0};
    if (message)
-     cef_string_utf16_to_utf8(message->str, message->length, &u8);
+     cef_string_to_utf8(message->str, message->length, &u8);
    cef_string_utf8_clear(&u8);
    return 0;
 }
@@ -19,7 +19,7 @@ on_status_message(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *browse
    ECef_Client *ec;
    cef_string_utf8_t u8 = {0};
    if (text)
-     cef_string_utf16_to_utf8(text->str, text->length, &u8);
+     cef_string_to_utf8(text->str, text->length, &u8);
    cef_string_utf8_clear(&u8);
 
    ec = browser_get_client(browser);
@@ -33,7 +33,7 @@ on_tooltip(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *browser, cef_
    ec = browser_get_client(browser);
    cef_string_utf8_t u8 = {0};
    if (text)
-     cef_string_utf16_to_utf8(text->str, text->length, &u8);
+     cef_string_to_utf8(text->str, text->length, &u8);
    cef_string_utf8_clear(&u8);
 
    return 0;
@@ -49,7 +49,7 @@ on_address_change(cef_display_handler_t *self, cef_browser_t *browser, cef_frame
    ec = browser_get_client(browser);
    b = browser_get(ec, browser);
    if (url)
-     cef_string_utf16_to_utf8(url->str, url->length, &u8);
+     cef_string_to_utf8(url->str, url->length, &u8);
    eina_stringshare_replace(&b->url, u8.str);
    cef_string_utf8_clear(&u8);
    if (ec->current_page == b)
@@ -69,7 +69,7 @@ on_title_change(cef_display_handler_t *self, cef_browser_t *browser, const cef_s
    ec = browser_get_client(browser);
    b = browser_get(ec, browser);
    if (title)
-     cef_string_utf16_to_utf8(title->str, title->length, &u8);
+     cef_string_to_utf8(title->str, title->length, &u8);
    eina_stringshare_replace(&b->title, u8.str);
    cef_string_utf8_clear(&u8);
    if (ec->current_page == b)
