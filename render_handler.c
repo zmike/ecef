@@ -1,3 +1,4 @@
+#define EFL_EO_API_SUPPORT
 #include "ecef.h"
 #include <Ecore_X.h>
 
@@ -76,9 +77,10 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
         o = elm_image_object_get(img);
         evas_object_image_size_set(o, width, height);
         evas_object_image_data_copy_set(o, (void*)buffer);
-        evas_object_image_size_set(o, width, height);
         for (r = 0; r < dirtyRectsCount; r++)
           evas_object_image_data_update_add(o, dirtyRects[r].x, dirtyRects[r].y, dirtyRects[r].width, dirtyRects[r].height);
+        if ((b->w != b->pw) || (b->h != b->ph))
+          eo_do(img, elm_obj_image_sizing_eval());
      }
    EINA_LIST_FOREACH(b->clones, l, o)
      evas_object_size_hint_aspect_set(o, EVAS_ASPECT_CONTROL_BOTH, b->w, b->h);
