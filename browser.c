@@ -126,18 +126,117 @@ urlbar_changed(ECef_Client *ec, Evas_Object *obj, void *ev EINA_UNUSED)
      browser_urlbar_show(ec, 0);
 }
 
+
+//ref http://mxr.mozilla.org/mozilla-central/source/netwerk/base/nsURLHelper.cpp#487
+static size_t
+urlbar_scheme_parse(const char *url)
+{
+   const char *p;
+   size_t len = 0;
+
+   for (p = url; p[0]; p++)
+     {
+        if (!len)
+          {
+             if (isalpha(p[0]))
+               len++;
+             else
+               return 0;
+          }
+        else
+          {
+             if (isalnum(p[0]) || (p[0] == '+') || (p[0] == '.') || (p[0] == '-'))
+               len++;
+             else if (p[0] == ':')
+               return len;
+             else
+               return 0;
+          }
+     }
+   return 0;
+}
+
 static void
 urlbar_activate(ECef_Client *ec, ...)
 {
    cef_frame_t *fr;
    cef_string_t str = {0};
    Eina_Stringshare *url;
+   Eina_Strbuf *buf;
+   char *s, *p, *r;
+   size_t len;
 
    url = elm_entry_entry_get(ec->urlbar);
-   cef_string_from_utf8(url, strlen(url), &str);
-   fr = ec->current_page->browser->get_main_frame(ec->current_page->browser);
-   fr->load_url(fr, &str);
-   cef_string_clear(&str);
+   buf = eina_strbuf_new();
+   eina_strbuf_append(buf, url);
+
+   //ref http://mxr.mozilla.org/mozilla-central/source/docshell/base/nsDefaultURIFixup.cpp
+   eina_strbuf_trim(buf);
+
+   /* remove embedded newlines */
+   len = eina_strbuf_length_get(buf);
+   s = eina_strbuf_string_steal(buf);
+   eina_strbuf_free(buf);
+   for (r = p = s; r[0]; r++, p++)
+     {
+        while (r[0] && ((r[0] == '\r') || (r[0] == '\n')))
+          r++, len--;
+        p[0] = r[0];
+     }
+   if (!len) return;
+   buf = eina_strbuf_manage_new_length(s, len);
+   len = urlbar_scheme_parse(s);
+   if (len)
+     {
+        //fixups for scheme typos
+        switch (len)
+          {
+           case 2:
+             if (!strncmp(s, "le", 2)) // "file"
+               eina_strbuf_prepend(buf, "fi");
+             if (!strncmp(s, "ps", 2)) // "https"
+               eina_strbuf_prepend(buf, "htt");
+             break;
+           case 3:
+             if (!strncmp(s, "ttp", 3)) // "http"
+               eina_strbuf_prepend_char(buf, 'h');
+             else if (!strncmp(s, "tps", 3)) // "https"
+               eina_strbuf_prepend(buf, "ht");
+             else if (!strncmp(s, "ile", 3)) // "file"
+               eina_strbuf_prepend_char(buf, 'f');
+             break;
+           case 4:
+             if (!strncmp(s, "ttps", 4)) // "https"
+               eina_strbuf_prepend_char(buf, 'h');
+          }
+     }
+   else //invalid scheme
+     {
+#ifdef WINDOWS //not a real define
+        if (strchr(s, '\\') || (
+#else
+        if (s[0] == '/')
+#endif
+          eina_strbuf_prepend(buf, "file://");
+     }
+   if (!strncmp(eina_strbuf_string_get(buf), "://", 3))
+     eina_strbuf_remove(buf, 3, 0);
+   else if (!strncmp(eina_strbuf_string_get(buf), "//", 2))
+     eina_strbuf_remove(buf, 2, 0);
+   if (!urlbar_scheme_parse(eina_strbuf_string_get(buf)))
+     eina_strbuf_prepend(buf, "http://");
+   len = eina_strbuf_length_get(buf);
+   s = eina_strbuf_string_steal(buf);
+   eina_strbuf_free(buf);
+   if (urlbar_scheme_parse(s))
+     {
+        //yay a valid scheme!
+        cef_string_from_utf8(s, len, &str);
+        fr = ec->current_page->browser->get_main_frame(ec->current_page->browser);
+        fr->load_url(fr, &str);
+        cef_string_clear(&str);
+     }
+   free(s);
 }
 
 static void
