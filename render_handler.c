@@ -81,7 +81,7 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
           evas_object_image_data_update_add(o, dirtyRects[r].x, dirtyRects[r].y, dirtyRects[r].width, dirtyRects[r].height);
      }
    EINA_LIST_FOREACH(b->clones, l, o)
-     evas_object_size_hint_aspect_set(o, EVAS_ASPECT_CONTROL_HORIZONTAL, b->w, b->h);
+     evas_object_size_hint_aspect_set(o, EVAS_ASPECT_CONTROL_BOTH, b->w, b->h);
    //fprintf(stderr, "PAINT %dx%d\n", width, height);
 }
 
@@ -349,7 +349,7 @@ render_image_clone(Browser *b)
 
    ec = browser_get_client(b->browser);
    img = elm_image_add(ec->win);
-   evas_object_size_hint_aspect_set(img, EVAS_ASPECT_CONTROL_HORIZONTAL, b->w, b->h);
+   evas_object_size_hint_aspect_set(img, EVAS_ASPECT_CONTROL_BOTH, b->w, b->h);
    evas_object_event_callback_add(img, EVAS_CALLBACK_DEL, render_image_clone_del, b);
    if (ec->clone_update_cb)
      ec->clone_update_cb(b, img);
