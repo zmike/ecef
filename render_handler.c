@@ -75,7 +75,7 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
      {
         o = elm_image_object_get(img);
         evas_object_image_size_set(o, width, height);
-        evas_object_image_data_set(o, (void*)buffer);
+        evas_object_image_data_copy_set(o, (void*)buffer);
         evas_object_image_size_set(o, width, height);
         for (r = 0; r < dirtyRectsCount; r++)
           evas_object_image_data_update_add(o, dirtyRects[r].x, dirtyRects[r].y, dirtyRects[r].width, dirtyRects[r].height);
