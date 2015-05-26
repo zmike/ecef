@@ -262,6 +262,13 @@ main(int argc, char *argv[])
    elm_object_part_content_set(ec->layout, "ecef.swallow.urlbar", ec->urlbar);
 
    evas_object_show(win);
+   {
+      Evas_Object *ic;
+
+      ic = elm_image_add(win);
+      elm_image_file_set(ic, "doge.png", NULL);
+      elm_win_icon_object_set(win, elm_image_object_get(ic));
+   }
    window_info.windowless_rendering_enabled = !windowed;
    if (windowed)
      {
