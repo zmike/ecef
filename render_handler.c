@@ -62,7 +62,7 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
    img = b->img;
    if (gl_avail && (!servo))
      {
-        if ((b->w != b->pw) || (b->h != b->ph))
+        if ((!b->buffer) || (b->w != b->pw) || (b->h != b->ph))
           {
              free(b->buffer);
              b->buffer = malloc(b->w * b->h * 4);
