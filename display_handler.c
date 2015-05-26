@@ -18,22 +18,37 @@ on_status_message(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *browse
 {
    ECef_Client *ec;
    cef_string_utf8_t u8 = {0};
-   if (text)
-     cef_string_to_utf8(text->str, text->length, &u8);
-   cef_string_utf8_clear(&u8);
 
    ec = browser_get_client(browser);
+   if (text && text->str)
+     {
+        cef_string_to_utf8(text->str, text->length, &u8);
+        elm_object_tooltip_text_set(ec->win, u8.str);
+        elm_object_tooltip_show(ec->win);
+        ec->status_tooltip = 1;
+     }
+   else if (ec->status_tooltip)
+     elm_object_tooltip_hide(ec->win);
+   cef_string_utf8_clear(&u8);
 }
 
 static int
 on_tooltip(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *browser, cef_string_t *text)
 {
    ECef_Client *ec;
+   cef_string_utf8_t u8 = {0};
 
    ec = browser_get_client(browser);
-   cef_string_utf8_t u8 = {0};
-   if (text)
-     cef_string_to_utf8(text->str, text->length, &u8);
+   if (text && text->str)
+     {
+        cef_string_to_utf8(text->str, text->length, &u8);
+        elm_object_tooltip_text_set(ec->win, u8.str);
+        elm_object_tooltip_show(ec->win);
+        ec->tooltip = 1;
+        ec->status_tooltip = 0;
+     }
+   else if (ec->tooltip)
+     elm_object_tooltip_hide(ec->win);
    cef_string_utf8_clear(&u8);
 
    return 0;

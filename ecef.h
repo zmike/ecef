@@ -333,6 +333,8 @@ typedef struct ECef_Client
    Eina_Bool need_resize : 1;
    Eina_Bool urlbar_visible : 1;
    Eina_Bool pagelist_visible : 1;
+   Eina_Bool tooltip : 1;
+   Eina_Bool status_tooltip : 1;
 } ECef_Client;
 
 
