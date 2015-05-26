@@ -60,12 +60,13 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
    b->pw = b->w, b->ph = b->h;
    b->w = width, b->h = height;
    img = b->img;
-   if (ec->current_page != b)
-     evas_object_size_hint_aspect_set(img, EVAS_ASPECT_CONTROL_HORIZONTAL, b->w, b->h);
    if (gl_avail && (!servo))
      {
-        free(b->buffer);
-        b->buffer = malloc(b->w * b->h * 4);
+        if ((b->w != b->pw) || (b->h != b->ph))
+          {
+             free(b->buffer);
+             b->buffer = malloc(b->w * b->h * 4);
+          }
         memcpy(b->buffer, buffer, b->w * b->h * 4);
      }
    if (gl_avail)

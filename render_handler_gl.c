@@ -230,12 +230,19 @@ render_image_gl_render(Evas_Object *obj)
    host = browser_get_host(b->browser);
    api = evas_gl_api_get(b->gl);
    api->glClearColor(0.0, 1.0, 0.0, 1.0);GLERR;
-   if ((b->w != b->pw) || (b->h != b->ph))
+   if (servo && ((b->w != b->pw) || (b->h != b->ph)))
      {
         api->glBindTexture(GL_TEXTURE_2D, b->tex);GLERR;
         api->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, b->w, b->h, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);GLERR;
      }
-   api->glBindTexture(GL_TEXTURE_2D, 0);GLERR;
+   else if (!servo)
+     {
+        api->glBindTexture(GL_TEXTURE_2D, b->tex);GLERR;
+     }
+   else
+     {
+        api->glBindTexture(GL_TEXTURE_2D, 0);GLERR;
+     }
    api->glBindFramebuffer(GL_FRAMEBUFFER, b->fbo);GLERR;
 #ifdef HAVE_SERVO
    if (servo)
@@ -246,8 +253,6 @@ render_image_gl_render(Evas_Object *obj)
 #endif
      {
         api->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, b->w, b->h, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, b->buffer);GLERR;
-        free(b->buffer);
-        b->buffer = NULL;
      }
    api->glBindFramebuffer(GL_FRAMEBUFFER, 0);GLERR;
 
