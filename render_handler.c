@@ -313,7 +313,7 @@ render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, i
         b->img = i = elm_glview_version_add(ec->win, EVAS_GL_GLES_2_X);
         if (!i) gl_avail = 0;
      }
-   b->pw = b->w = w, b->ph = b->h = h;
+   b->w = w, b->h = h;
    if (!b->img)
      b->img = i = elm_image_add(ec->win);
    evas_object_resize(i, w, h);
