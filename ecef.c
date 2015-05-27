@@ -85,7 +85,15 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
    else if ((!strcmp(ev->key, "Escape")) && (!ev->modifiers))
      {
         if (elm_object_focus_get(ec->urlbar))
-          browser_urlbar_hide(ec);
+          {
+             if (eina_streq(elm_entry_entry_get(ec->urlbar), ec->current_page->url))
+               browser_urlbar_hide(ec);
+             else
+               {
+                  elm_entry_entry_set(ec->urlbar, ec->current_page->url);
+                  elm_entry_select_all(ec->urlbar);
+               }
+          }
         else if (ec->pagelist_visible)
           browser_pagelist_hide(ec);
         else if (ec->urlbar_visible)
