@@ -185,9 +185,9 @@ render_image_gl_init(Evas_Object *obj)
 }
 
 void
-render_image_gl_present(cef_render_handler_t *handler EINA_UNUSED, cef_browser_t *browser)
+render_image_gl_present(cef_render_handler_t *handler EINA_UNUSED, cef_browser_t *browser EINA_UNUSED)
 {
-   Browser *b = browser_get(browser_get_client(browser), browser);
+   //Browser *b = browser_get(browser_get_client(browser), browser);
 
 //fprintf(stderr, "PRESENT\n");
 
@@ -227,6 +227,7 @@ render_image_gl_render(Evas_Object *obj)
    cef_browser_host_t *host;
 //fprintf(stderr, "RENDER\n");
    b = evas_object_data_get(obj, "Browser");
+   if (!b->painted) return;
    host = browser_get_host(b->browser);
    api = evas_gl_api_get(b->gl);
    api->glClearColor(0.0, 1.0, 0.0, 1.0);GLERR;
@@ -283,6 +284,7 @@ render_image_gl_render(Evas_Object *obj)
 
    api->glDrawArrays(GL_TRIANGLES, 0, 6);GLERR;
    api->glBindBuffer(GL_ARRAY_BUFFER, 0);GLERR;
+   b->painted = 0;
 }
 
 void
@@ -291,6 +293,7 @@ render_image_gl_paint(Browser *b)
    elm_glview_size_set(b->img, b->w, b->h);
    elm_glview_changed_set(b->img);
    render_image_gl_clones_update(b);
+   b->painted = 1;
 }
 
 void
@@ -299,7 +302,6 @@ render_image_gl_setup(Browser *b, int w, int h)
    elm_glview_mode_set(b->img, ELM_GLVIEW_DEPTH | ELM_GLVIEW_STENCIL /*| ELM_GLVIEW_DIRECT */);
    elm_glview_init_func_set(b->img, render_image_gl_init);
    //elm_glview_resize_policy_set(b->img, ELM_GLVIEW_RESIZE_POLICY_SCALE);
-   /* force setup of internal render callbacks because glview is a stupid widget */
    elm_glview_render_func_set(b->img, render_image_gl_render);
    elm_glview_size_set(b->img, w, h);
    elm_glview_changed_set(b->img);

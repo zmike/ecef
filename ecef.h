@@ -308,6 +308,7 @@ typedef struct Browser
    Eina_Bool can_forward : 1;
    Eina_Bool loading : 1;
    Eina_Bool swapping : 1;
+   Eina_Bool painted : 1;
 } Browser;
 
 typedef void (*Browser_Clone_Update_Cb)(Browser *b, Evas_Object *img);
