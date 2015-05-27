@@ -483,9 +483,10 @@ browser_set(ECef_Client *ec, Browser *b)
 {
    cef_browser_host_t *host;
    int x, y, w, h;
+   Evas_Object *pobj;
    Ecore_X_Window_State state[1];
 
-   elm_object_part_content_unset(ec->layout, "ecef.swallow.browser");
+   pobj = elm_object_part_content_unset(ec->layout, "ecef.swallow.browser");
    if (ec->current_page)
      {
         state[0] = ECORE_X_WINDOW_STATE_HIDDEN;
@@ -501,6 +502,8 @@ browser_set(ECef_Client *ec, Browser *b)
         if (b->swapping)
           elm_object_part_content_set(ec->layout, "ecef.swallow.swap", render_image_clone(ec->current_page));
      }
+   else
+     evas_object_del(pobj);
    ec->current_page = b;
    if (b->swapping)
      elm_object_part_content_set(ec->layout, "ecef.swallow.browser", render_image_clone(b));

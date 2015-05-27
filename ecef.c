@@ -251,11 +251,18 @@ main(int argc, char *argv[])
 
    eina_log_domain_level_set("evas_main", EINA_LOG_LEVEL_CRITICAL);
    ec->layout = elm_layout_add(win);
+   elm_layout_theme_set(ec->layout, "layout", "ecef", "base");
    EXPAND(ec->layout);
    FILL(ec->layout);
+   {
+      Evas_Object *r;
+
+      r = evas_object_rectangle_add(evas_object_evas_get(win));
+      evas_object_size_hint_min_set(r, 640, 480);
+      elm_object_part_content_set(ec->layout, "ecef.swallow.browser", r);
+   }
    evas_object_resize(ec->layout, 640, 480);
    elm_win_resize_object_add(win, ec->layout);
-   elm_layout_theme_set(ec->layout, "layout", "ecef", "base");
    evas_object_show(ec->layout);
 
    ec->pagelist = elm_gengrid_add(win);
