@@ -289,7 +289,7 @@ main(int argc, char *argv[])
      }
 
    window_info.parent_window = elm_win_window_id_get(win);
-   browser_new(ec, "www.mozilla.org");
+   browser_new(ec, "http://en.wikipedia.org");
 
    if (!servo)
      ecore_timer_add(0.01, timer, NULL);
