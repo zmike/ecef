@@ -331,10 +331,10 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    render_image_new(ec, b, host, w, h);
    eina_hash_add(ec->browsers, &id, b);
    b->it = elm_gengrid_item_append(ec->pagelist, &browser_itc, b, NULL, NULL);
-   first = !ec->current_page;
-   if (ec->pending_page)
+   first = (eina_hash_population(ec->browsers) == 1) && (!ec->current_page);
+   if (eina_list_data_get(ec->pending_pages))
      browser_set(ec, b);
-   ec->pending_page = 0;
+   ec->pending_pages = eina_list_remove_list(ec->pending_pages, ec->pending_pages);
    if (!first) return;
    /* first browser creation: set up callbacks */
    eina_log_domain_level_set("evas_main", EINA_LOG_LEVEL_ERR);
@@ -367,13 +367,13 @@ browser_get(ECef_Client *ec, cef_browser_t *browser)
 }
 
 void
-browser_new(ECef_Client *ec, const char *url)
+browser_new(ECef_Client *ec, const char *url, Eina_Bool pending)
 {
    cef_string_t u = {0};
 
    cef_string_from_utf8(url, strlen(url), &u);
+   ec->pending_pages = eina_list_append(ec->pending_pages, (void*)pending);
    cef_browser_host_create_browser(ec->window_info, &ec->client, &u, ec->browser_settings, NULL);
-   ec->pending_page = 1;
    cef_string_clear(&u);
 }
 

@@ -323,6 +323,7 @@ typedef struct ECef_Client
    Evas_Object *back, *forward, *reload;
    Browser *current_page;
    Eina_Hash *browsers;
+   Eina_List *pending_pages;
    Browser_Clone_Update_Cb clone_update_cb;
    cef_render_handler_t *render_handler;
    cef_display_handler_t *display_handler;
@@ -332,7 +333,6 @@ typedef struct ECef_Client
    Eina_Stringshare *status;
    Eina_Stringshare *tooltip;
    Eina_Bool urlbar_changed : 1;
-   Eina_Bool pending_page : 1;
    Eina_Bool need_resize : 1;
    Eina_Bool urlbar_visible : 1;
    Eina_Bool pagelist_visible : 1;
@@ -372,7 +372,7 @@ modifiers_get(Evas_Modifier *m) {
 Evas_Object *button_add(Evas_Object *parent, const char *icon, const char *text, const char *style, Evas_Smart_Cb cb, void *data);
 
 void on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_t *browser);
-void browser_new(ECef_Client *ec, const char *url);
+void browser_new(ECef_Client *ec, const char *url, Eina_Bool pending);
 Browser *browser_get(ECef_Client *ec, cef_browser_t *browser);
 char *browser_page_string_get(Browser *b);
 void browser_window_title_update(ECef_Client *ec);

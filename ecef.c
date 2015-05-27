@@ -111,7 +111,7 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
      browser_reload(ec->current_page->browser);
    else if ((!strcmp(ev->key, "t")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
      {
-        browser_new(ec, "about:blank");
+        browser_new(ec, "about:blank", 1);
      }
    else if ((!strcmp(ev->key, "Left")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
      {
@@ -299,7 +299,7 @@ main(int argc, char *argv[])
      }
 
    window_info.parent_window = elm_win_window_id_get(win);
-   browser_new(ec, "http://en.wikipedia.org");
+   browser_new(ec, "http://en.wikipedia.org", 1);
 
    if (!servo)
      ecore_timer_add(0.01, timer, NULL);
