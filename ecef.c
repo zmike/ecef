@@ -281,7 +281,10 @@ main(int argc, char *argv[])
       Evas_Object *ic;
 
       ic = elm_image_add(win);
-      elm_image_file_set(ic, "doge.png", NULL);
+      if (servo)
+        elm_image_file_set(ic, "doge.png", NULL);
+      else
+        elm_image_file_set(ic, "chromium.png", NULL);
       elm_win_icon_object_set(win, elm_image_object_get(ic));
    }
    window_info.windowless_rendering_enabled = !windowed;
