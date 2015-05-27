@@ -14,6 +14,32 @@ on_console_message(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *brows
 }
 
 static void
+tooltip_update(ECef_Client *ec)
+{
+   Eina_Strbuf *buf;
+
+   if ((!ec->tooltip) && (!ec->status))
+     {
+        if (ec->tooltip_visible)
+          elm_object_tooltip_hide(ec->win);
+        ec->tooltip_visible = 0;
+        return;
+     }
+   buf = eina_strbuf_new();
+   if (ec->tooltip)
+     eina_strbuf_append(buf, ec->tooltip);
+   if (ec->tooltip && ec->status)
+     eina_strbuf_append(buf, "<ps/>");
+   if (ec->status)
+     eina_strbuf_append_printf(buf, "<link>%s</link>", ec->status);
+   elm_object_tooltip_text_set(ec->win, eina_strbuf_string_get(buf));
+   elm_object_tooltip_style_set(ec->win, "browser");
+   elm_object_tooltip_show(ec->win);
+   eina_strbuf_free(buf);
+   ec->tooltip_visible = 1;
+}
+
+static void
 on_status_message(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *browser, const cef_string_t *text)
 {
    ECef_Client *ec;
@@ -21,14 +47,9 @@ on_status_message(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *browse
 
    ec = browser_get_client(browser);
    if (text && text->str)
-     {
-        cef_string_to_utf8(text->str, text->length, &u8);
-        elm_object_tooltip_text_set(ec->win, u8.str);
-        elm_object_tooltip_show(ec->win);
-        ec->status_tooltip = 1;
-     }
-   else if (ec->status_tooltip)
-     elm_object_tooltip_hide(ec->win);
+     cef_string_to_utf8(text->str, text->length, &u8);
+   eina_stringshare_replace(&ec->status, u8.str);
+   tooltip_update(ec);
    cef_string_utf8_clear(&u8);
 }
 
@@ -40,18 +61,12 @@ on_tooltip(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *browser, cef_
 
    ec = browser_get_client(browser);
    if (text && text->str)
-     {
-        cef_string_to_utf8(text->str, text->length, &u8);
-        elm_object_tooltip_text_set(ec->win, u8.str);
-        elm_object_tooltip_show(ec->win);
-        ec->tooltip = 1;
-        ec->status_tooltip = 0;
-     }
-   else if (ec->tooltip)
-     elm_object_tooltip_hide(ec->win);
+     cef_string_to_utf8(text->str, text->length, &u8);
+   eina_stringshare_replace(&ec->tooltip, u8.str);
+   tooltip_update(ec);
    cef_string_utf8_clear(&u8);
 
-   return 0;
+   return 1;
 }
 
 static void

@@ -484,6 +484,42 @@ collections {
          swallow { "elm.swallow.content"; }
       }
    }
+
+   group { "elm/label/base/tooltip/browser"; nomouse;
+      styles {
+         style { name: "tooltip_style";
+            base: "font=Sans font_size=11 font_weight=Bold color=#ffffff style=glow glow_color=#00000000 glow_color2=#55555555 wrap=none text_class=tooltip color_class=text";
+            tag: "link" "+ font_weight=Normal color=#3399ff underline=on underline_color=#3399ff";
+         }
+      }
+      parts {
+         textblock { "elm.text";
+            scale;
+            desc {
+               text {
+                  style: "tooltip_style";
+                  min: 1 1;
+                  ellipsis: -1;
+               }
+            }
+         }
+      }
+   }
+
+   group { "elm/tooltip/base/browser"; nomouse;
+      data.item: "pad_x" "5";
+      data.item: "pad_y" "5";
+      parts {
+         rect { "fader";
+            desc {
+               color: 0 0 0 222;
+               rel1.offset: -2 -2;
+               rel2.offset: 1 1;
+            }
+         }
+         swallow { "elm.swallow.content"; }
+      }
+   }
 #define IC(Name, File, Min, Max) \
    group { "elm/icon/"##Name##"/default"; min: Min Min; max: Max Max; \
    images.image: File COMP; parts { part { "base"; \

@@ -329,13 +329,14 @@ typedef struct ECef_Client
    cef_load_handler_t *load_handler;
    cef_window_info_t *window_info;
    cef_browser_settings_t *browser_settings;
+   Eina_Stringshare *status;
+   Eina_Stringshare *tooltip;
    Eina_Bool urlbar_changed : 1;
    Eina_Bool pending_page : 1;
    Eina_Bool need_resize : 1;
    Eina_Bool urlbar_visible : 1;
    Eina_Bool pagelist_visible : 1;
-   Eina_Bool tooltip : 1;
-   Eina_Bool status_tooltip : 1;
+   Eina_Bool tooltip_visible : 1;
 } ECef_Client;
 
 
