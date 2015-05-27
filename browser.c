@@ -250,24 +250,7 @@ pagelist_activated(ECef_Client *ec, Evas_Object *obj EINA_UNUSED, Elm_Object_Ite
    Edje_Message_Int_Set *msg;
 
    b = elm_object_item_data_get(it);
-   if (ec->current_page == b) return;
-
-   if (windowed)
-     {
-        browser_set(ec, b);
-        return;
-     }
-   evas_object_geometry_get(b->it_clone, &x, &y, &w, &h);
-   msg = alloca(sizeof(Edje_Message_Int_Set) + (sizeof(int) * 3));
-   msg->count = 4;
-   msg->val[0] = x;
-   msg->val[1] = y;
-   evas_object_geometry_get(ec->current_page->img, &bx, &by, NULL, NULL);
-   msg->val[2] = ec->current_page->w - ((x - bx) + w);
-   msg->val[3] = ec->current_page->h - ((y - by) + h);
-   edje_object_message_send(elm_layout_edje_get(ec->layout), EDJE_MESSAGE_INT_SET, 0, msg);
-   b->swapping = 1;
-   browser_set(ec, b);
+   browser_swap(ec, b, b->it_clone);
 }
 
 static void
@@ -535,4 +518,36 @@ browser_set(ECef_Client *ec, Browser *b)
    ecore_x_window_move(host->get_window_handle(host), x, y);
    ecore_x_window_show(host->get_window_handle(host));
    ecore_x_netwm_window_state_set(host->get_window_handle(host), state, 0);
+}
+
+void
+browser_swap(ECef_Client *ec, Browser *b, Evas_Object *clone)
+{
+   int x, y, w, h, bx, by, bw, bh;
+   Edje_Message_Int_Set *msg;
+
+   if (ec->current_page == b) return;
+
+   if (windowed)
+     {
+        browser_set(ec, b);
+        return;
+     }
+   evas_object_geometry_get(clone, &x, &y, &w, &h);
+   msg = alloca(sizeof(Edje_Message_Int_Set) + (sizeof(int) * 3));
+   msg->count = 4;
+   msg->val[0] = x;
+   msg->val[1] = y;
+   if (ec->dialing)
+     evas_object_geometry_get(ec->dialer, &bx, &by, &bw, &bh);
+   else
+     {
+        evas_object_geometry_get(ec->current_page->img, &bx, &by, NULL, NULL);
+        bw = ec->current_page->w, bh = ec->current_page->h;
+     }
+   msg->val[2] = bw - ((x - bx) + w);
+   msg->val[3] = bh - ((y - by) + h);
+   edje_object_message_send(elm_layout_edje_get(ec->layout), EDJE_MESSAGE_INT_SET, 0, msg);
+   b->swapping = 1;
+   browser_set(ec, b);
 }
