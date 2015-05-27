@@ -283,17 +283,31 @@ static void
 pagelist_visible(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED, const char *src EINA_UNUSED)
 {
    ECef_Client *ec = d;
+   Eina_Iterator *it;
+   Browser *b;
 
    ec->pagelist_visible = 1;
    elm_object_focus_set(ec->pagelist, 1);
+   if ((!gl_avail) || windowed) return;
+   it = eina_hash_iterator_data_new(ec->browsers);
+   EINA_ITERATOR_FOREACH(it, b)
+     elm_glview_render_policy_set(b->img, ELM_GLVIEW_RENDER_POLICY_ALWAYS);
+   eina_iterator_free(it);
 }
 
 static void
 pagelist_hidden(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED, const char *src EINA_UNUSED)
 {
    ECef_Client *ec = d;
+   Eina_Iterator *it;
+   Browser *b;
 
    ec->pagelist_visible = 0;
+   if ((!gl_avail) || windowed) return;
+   it = eina_hash_iterator_data_new(ec->browsers);
+   EINA_ITERATOR_FOREACH(it, b)
+     elm_glview_render_policy_set(b->img, ELM_GLVIEW_RENDER_POLICY_ON_DEMAND);
+   eina_iterator_free(it);
 }
 
 static void
