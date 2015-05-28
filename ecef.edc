@@ -126,6 +126,16 @@ collections {
                rel2.relative: 0 1;
                rel1.offset: 8 0;
                rel1.to_x: "ecef.swallow.forward";
+               rel.to_y: "ecef.swallow.favicon";
+            }
+         }
+         swallow { "ecef.swallow.favicon";
+            desc { align: 0 0;
+               rel1.relative: 1 0;
+               rel2.relative: 0 1;
+               rel1.offset: 8 0;
+               aspect: 1 1; aspect_preference: SOURCE;
+               rel1.to_x: "ecef.swallow.reload";
                rel.to_y: "ecef.swallow.urlbar";
             }
          }
@@ -148,14 +158,14 @@ collections {
                rel2.relative: 1 0;
                rel1.offset: 8 0;
                rel2.offset: -3 -1;
-               rel1.to_x: "ecef.swallow.reload";
+               rel1.to_x: "ecef.swallow.favicon";
             }
             desc { "visible"; align: 0.0 0;
                rel1.relative: 1 0;
                rel2.relative: 1 0;
                rel1.offset: 8 0;
                rel2.offset: -3 30;
-               rel1.to_x: "ecef.swallow.reload";
+               rel1.to_x: "ecef.swallow.favicon";
             }
          }
          program { "show_urlbar";
@@ -435,7 +445,7 @@ collections {
    group { "elm/gengrid/item/default/pagelist"; nomouse;
       data.item: "selectraise" "on";
       data.item: "texts" "ecef.text.title";
-      data.item: "contents" "ecef.swallow.view";
+      data.item: "contents" "ecef.swallow.view ecef.swallow.favicon";
       parts {
          rect { "selection";
             desc {
@@ -497,6 +507,18 @@ collections {
                rel2.offset: -4 -1;
             }
          }
+         rect { "favicon_clip"; clip: "clip";
+            desc {
+               color: 255 255 255 192;
+            }
+         }
+         swallow { "ecef.swallow.favicon"; clip: "favicon_clip";
+            desc { align: 1 0;
+               aspect: 1 1; aspect_preference: SOURCE;
+               rel.to: "ecef.swallow.view";
+               rel1.relative: 0.7 0.7;
+            }
+         }
          text { "ecef.text.title";
             desc {
                align: 0.0 0.0;
@@ -516,7 +538,7 @@ collections {
    }
    group { "elm/gengrid/item/default/dialer"; nomouse;
       data.item: "texts" "ecef.text.title";
-      data.item: "contents" "ecef.swallow.view";
+      data.item: "contents" "ecef.swallow.view ecef.swallow.favicon";
       parts {
          rect { "clip";
             desc {
@@ -531,6 +553,18 @@ collections {
                rel2.to_y: "ecef.text.title";
                rel2.relative: 1 0;
                rel2.offset: -4 -1;
+            }
+         }
+         rect { "favicon_clip"; clip: "clip";
+            desc {
+               color: 255 255 255 192;
+            }
+         }
+         swallow { "ecef.swallow.favicon"; clip: "favicon_clip";
+            desc { align: 1 0;
+               aspect: 1 1; aspect_preference: SOURCE;
+               rel.to: "ecef.swallow.view";
+               rel1.relative: 0.7 0.7;
             }
          }
          text { "ecef.text.title";

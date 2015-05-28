@@ -39,8 +39,20 @@ dialer_item_del(Browser *b, Evas_Object *obj EINA_UNUSED)
 static Evas_Object *
 dialer_item_content_get(Browser *b, Evas_Object *obj, const char *part)
 {
+   Evas_Object *ic, *img;
+   const Eina_File *f;
+
    if (!b) return NULL;
-   return b->it_clone = render_image_clone(b);
+   if (eina_streq(part, "ecef.swallow.view"))
+     return b->it_clone = render_image_clone(b);
+
+   if (!b->favicon) return NULL;
+   img = eina_hash_find(browser_get_client(b->browser)->favicons, b->favicon);
+   if (!img) return NULL; //FIXME: wat?
+   evas_object_image_mmap_get(elm_image_object_get(img), &f, NULL);
+   ic = elm_image_add(obj);
+   elm_image_mmap_set(ic, f, NULL);
+   return ic;
 }
 
 static void

@@ -296,6 +296,7 @@ typedef struct Browser
    Evas_Object *img;
    Eina_Stringshare *title;
    Eina_Stringshare *url;
+   Eina_Stringshare *favicon;
    Elm_Object_Item *it;
    Evas_Object *it_clone; //pagelist clone
    GLuint program;
@@ -329,10 +330,11 @@ typedef struct ECef_Client
    Evas_Object *layout;
    Evas_Object *pagelist;
    Evas_Object *urlbar;
-   Evas_Object *back, *forward, *reload;
+   Evas_Object *back, *forward, *reload, *favicon;
    Evas_Object *dialer;
    Browser *current_page;
    Eina_Hash *browsers;
+   Eina_Hash *favicons;
    Eina_Inlist *focus_stack;
    Eina_List *pending_pages;
    Eina_List *create_cbs;
@@ -400,6 +402,7 @@ char *browser_page_string_get(Browser *b);
 void browser_window_title_update(ECef_Client *ec);
 void browser_set(ECef_Client *ec, Browser *b);
 void browser_swap(ECef_Client *ec, Browser *b, Evas_Object *clone);
+void browser_favicon_set(ECef_Client *ec, Browser *b, const char *favicon);
 void browser_back(cef_browser_t *browser, ...);
 void browser_forward(cef_browser_t *browser, ...);
 void browser_reload(cef_browser_t *browser, ...);

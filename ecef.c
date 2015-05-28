@@ -258,6 +258,7 @@ main(int argc, char *argv[])
    ec->browsers = eina_hash_int32_new(NULL);
    ec->browser_settings = &browser_settings;
    ec->window_info = &window_info;
+   ec->favicons = eina_hash_string_superfast_new((Eina_Free_Cb)evas_object_del);
 
    servo = !!dlsym(NULL, "servo_test");
    if ((!windowed) && servo)
@@ -273,12 +274,14 @@ main(int argc, char *argv[])
    elm_win_autodel_set(win, 1);
 
    ec->win = win;
+   ec->favicon = elm_image_add(win);
 
    eina_log_domain_level_set("evas_main", EINA_LOG_LEVEL_CRITICAL);
    ec->layout = elm_layout_add(win);
    elm_layout_theme_set(ec->layout, "layout", "ecef", "base");
    EXPAND(ec->layout);
    FILL(ec->layout);
+   elm_object_part_content_set(ec->layout, "ecef.swallow.favicon", ec->favicon);
    {
       Evas_Object *r;
 
