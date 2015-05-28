@@ -361,6 +361,7 @@ render_image_clone(Browser *b)
    else if (!gl_avail)
      evas_object_image_source_set(elm_image_object_get(img), elm_image_object_get(b->img));
    evas_object_name_set(img, "browser clone");
+   evas_object_data_set(img, "browser", b);
    b->clones = eina_list_append(b->clones, img);
    return img;
 }
