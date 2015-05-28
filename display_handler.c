@@ -75,18 +75,22 @@ on_address_change(cef_display_handler_t *self, cef_browser_t *browser, cef_frame
    ECef_Client *ec;
    cef_string_utf8_t u8 = {0};
    Browser *b;
+   Eina_Bool changed;
 
    ec = browser_get_client(browser);
    b = browser_get(ec, browser);
    if (url)
      cef_string_to_utf8(url->str, url->length, &u8);
-   eina_stringshare_replace(&b->url, u8.str);
+   changed = eina_stringshare_replace(&b->url, u8.str);
    cef_string_utf8_clear(&u8);
+   if (!changed) return;
    if (ec->current_page == b)
      {
         elm_entry_entry_set(ec->urlbar, b->url);
         browser_urlbar_show(ec, 1);
      }
+   if (b->it && (!b->title))
+     elm_gengrid_item_update(b->it);
 }
 
 static void
@@ -95,15 +99,19 @@ on_title_change(cef_display_handler_t *self, cef_browser_t *browser, const cef_s
    ECef_Client *ec;
    cef_string_utf8_t u8 = {0};
    Browser *b;
+   Eina_Bool changed;
 
    ec = browser_get_client(browser);
    b = browser_get(ec, browser);
    if (title)
      cef_string_to_utf8(title->str, title->length, &u8);
-   eina_stringshare_replace(&b->title, u8.str);
+   changed = eina_stringshare_replace(&b->title, u8.str);
    cef_string_utf8_clear(&u8);
+   if (!changed) return;
    if (ec->current_page == b)
      browser_window_title_update(ec);
+   if (b->it)
+     elm_gengrid_item_update(b->it);
 }
 
 static void
