@@ -86,7 +86,7 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
      {
         if (elm_object_focus_get(ec->urlbar))
           {
-             if (eina_streq(elm_entry_entry_get(ec->urlbar), ec->current_page->url))
+             if ((!ec->current_page) || eina_streq(elm_entry_entry_get(ec->urlbar), ec->current_page->url))
                browser_urlbar_hide(ec);
              else
                {
@@ -108,19 +108,22 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
    else if ((!strcasecmp(ev->key, "v")) && (ev->modifiers & (ECORE_EVENT_MODIFIER_CTRL | ECORE_EVENT_MODIFIER_SHIFT)))
      elm_cnp_selection_get(ec->win, ELM_SEL_TYPE_CLIPBOARD, ELM_SEL_FORMAT_TEXT, paste_url, ec);
    else if ((!strcmp(ev->key, "F5")) || ((!strcmp(ev->key, "r")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL)))
-     browser_reload(ec->current_page->browser);
+     {
+        if (ec->current_page)
+          browser_reload(ec->current_page->browser);
+     }
    else if ((!strcmp(ev->key, "t")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
      {
-        browser_new(ec, "about:blank", 1);
+        browser_new(ec, "about:blank", 1, NULL, NULL);
      }
    else if ((!strcmp(ev->key, "Left")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
      {
-        if (ec->current_page->can_back)
+        if (ec->current_page && ec->current_page->can_back)
           browser_back(ec->current_page->browser);
      }
    else if ((!strcmp(ev->key, "Right")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
      {
-        if (ec->current_page->can_forward)
+        if (ec->current_page && ec->current_page->can_forward)
           browser_forward(ec->current_page->browser);
      }
    else
