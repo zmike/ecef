@@ -321,7 +321,7 @@ main(int argc, char *argv[])
 
         elm_layout_sizing_eval(ec->layout);
         evas_object_smart_calculate(ec->layout);
-        edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.swallow.browser", &x, &y, &w, &h);
+        edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.sizer.browser", &x, &y, &w, &h);
         evas_obscured_rectangle_add(evas_object_evas_get(ec->win), x, y, w, h);
      }
 

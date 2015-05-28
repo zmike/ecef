@@ -19,7 +19,7 @@ browser_resize(ECef_Client *ec, ...)
              ec->need_resize = 1;
              return;
           }
-        edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.swallow.browser", &x, &y, &w, &h);
+        edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.sizer.browser", &x, &y, &w, &h);
         ecore_x_window_move_resize(host->get_window_handle(host), x, y, w, h);
      }
 }
@@ -350,7 +350,7 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    host = browser_get_host(browser);
    b = calloc(1, sizeof(Browser));
    b->browser = browser;
-   edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.swallow.browser", NULL, NULL, &w, &h);
+   edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.sizer.browser", NULL, NULL, &w, &h);
    render_image_new(ec, b, host, w, h);
    eina_hash_add(ec->browsers, &id, b);
    first = (eina_hash_population(ec->browsers) == 1) && (!ec->current_page);
@@ -558,7 +558,7 @@ browser_set(ECef_Client *ec, Browser *b)
    if (b->swapping)
      elm_object_signal_emit(ec->layout, "ecef,browser,swap", "ecef");
    if (!windowed) return;
-   edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.swallow.browser", &x, &y, &w, &h);
+   edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.sizer.browser", &x, &y, &w, &h);
    ecore_x_window_move(host->get_window_handle(host), x, y);
    ecore_x_window_show(host->get_window_handle(host));
    ecore_x_netwm_window_state_set(host->get_window_handle(host), state, 0);

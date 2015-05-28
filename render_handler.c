@@ -27,7 +27,7 @@ get_view_rect(cef_render_handler_t *self, cef_browser_t *browser, cef_rect_t *re
    ECef_Client *ec;
 
    ec = browser_get_client(browser);
-   edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.swallow.browser", &rect->x, &rect->y, &rect->width, &rect->height);
+   edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.sizer.browser", &rect->x, &rect->y, &rect->width, &rect->height);
    //fprintf(stderr, "VIEW RECT: %dx%d\n", rect->width, rect->height);
    return 1;
 }

@@ -97,6 +97,7 @@ collections {
                }
             }
          }
+         spacer { "ecef.sizer.browser"; }
          rect { "urlbar_fader";
             desc {
                rel.to_y: "ecef.swallow.urlbar";
