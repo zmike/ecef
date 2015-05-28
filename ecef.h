@@ -315,7 +315,6 @@ typedef struct Browser
    Eina_Bool can_forward : 1;
    Eina_Bool loading : 1;
    Eina_Bool swapping : 1;
-   Eina_Bool painted : 1;
    Eina_Bool dialer : 1; //is a dialer browser
    Eina_Bool deleted : 1; //is a dialer browser
 } Browser;

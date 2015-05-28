@@ -225,7 +225,6 @@ render_image_gl_render(Evas_Object *obj)
    cef_browser_host_t *host;
 //fprintf(stderr, "RENDER\n");
    b = evas_object_data_get(obj, "Browser");
-   if (!b->painted) return;
    host = browser_get_host(b->browser);
    api = evas_gl_api_get(b->gl);
    api->glClearColor(0.0, 1.0, 0.0, 1.0);GLERR;
@@ -282,7 +281,6 @@ render_image_gl_render(Evas_Object *obj)
 
    api->glDrawArrays(GL_TRIANGLES, 0, 6);GLERR;
    api->glBindBuffer(GL_ARRAY_BUFFER, 0);GLERR;
-   b->painted = 0;
 }
 
 void
@@ -291,7 +289,6 @@ render_image_gl_paint(Browser *b)
    elm_glview_size_set(b->img, b->w, b->h);
    elm_glview_changed_set(b->img);
    render_image_gl_clones_update(b);
-   b->painted = 1;
 }
 
 void
