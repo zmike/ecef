@@ -106,6 +106,7 @@ dialer_deactivate(ECef_Client *ec, ...)
    Elm_Object_Item *it;
 
    ec->dialing = 0;
+   browser_urlbar_hide(ec);
    evas_object_hide(elm_object_part_content_unset(ec->layout, "ecef.swallow.dialier"));
    elm_layout_signal_emit(ec->layout, "ecef,dialer,reset", "ecef");
    for (it = elm_gengrid_first_item_get(ec->dialer); it; it = elm_gengrid_item_next_get(it))
@@ -177,6 +178,7 @@ dialer_use(ECef_Client *ec)
         if (b && is_glview())
           elm_glview_render_policy_set(b->img, ELM_GLVIEW_RENDER_POLICY_ALWAYS);
      }
+   browser_urlbar_show(ec, 0);
 }
 
 void
