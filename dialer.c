@@ -195,6 +195,7 @@ dialer_use(ECef_Client *ec)
         if (b && is_glview())
           elm_glview_render_policy_set(b->img, ELM_GLVIEW_RENDER_POLICY_ALWAYS);
      }
+   browser_window_title_update(ec);
    browser_urlbar_show(ec, 0);
 }
 
