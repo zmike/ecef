@@ -283,6 +283,12 @@ cef_new(size_t size, void **ptr)
    return base;
 }
 #ifndef TEST_APP
+
+extern Eina_Bool servo;
+extern Eina_Bool gl_avail;
+extern Eina_Bool windowed;
+extern Eina_List *clients;
+
 typedef struct Browser
 {
    cef_browser_t *browser;
@@ -372,6 +378,12 @@ modifiers_get(Evas_Modifier *m) {
   return modifiers;
 }
 
+static inline Eina_Bool
+is_glview(void)
+{
+   return gl_avail && !windowed;
+}
+
 Evas_Object *button_add(Evas_Object *parent, const char *icon, const char *text, const char *style, Evas_Smart_Cb cb, void *data);
 
 void on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_t *browser);
@@ -394,10 +406,6 @@ void browser_pagelist_hide(ECef_Client *ec);
 void render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, int h);
 Evas_Object *render_image_clone(Browser *b);
 
-extern Eina_Bool servo;
-extern Eina_Bool gl_avail;
-extern Eina_Bool windowed;
-extern Eina_List *clients;
 
 # define E_LIST_HANDLER_APPEND(list, type, callback, data) \
   do \
