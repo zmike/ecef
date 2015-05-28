@@ -40,6 +40,8 @@ browser_page_del(Browser *b, Evas_Object *obj EINA_UNUSED)
    ec = browser_get_client(b->browser);
    id = b->browser->get_identifier(b->browser);
    eina_hash_del_by_key(ec->browsers, &id);
+   if (!elm_gengrid_items_count(ec->pagelist))
+     elm_layout_signal_emit(ec->layout, "ecef,pages,unavailable", "ecef");
    browser_get_host(b->browser)->close_browser(browser_get_host(b->browser), 0);
    EINA_LIST_FREE(b->clones, o)
      evas_object_del(o);
@@ -449,7 +451,8 @@ browser_urlbar_set(ECef_Client *ec, const char *url)
 void
 browser_pagelist_show(ECef_Client *ec)
 {
-   elm_layout_signal_emit(ec->layout, "ecef,pagelist,show", "ecef");
+   if (elm_gengrid_items_count(ec->pagelist))
+     elm_layout_signal_emit(ec->layout, "ecef,pagelist,show", "ecef");
 }
 
 void
@@ -534,6 +537,7 @@ browser_set(ECef_Client *ec, Browser *b)
         elm_object_part_content_set(ec->layout, "ecef.swallow.browser", b->img);
         dialer_unuse(ec);
      }
+   elm_layout_signal_emit(ec->layout, "ecef,pages,available", "ecef");
    evas_object_size_hint_aspect_set(b->img, EVAS_ASPECT_CONTROL_NONE, -1, -1);
    browser_window_title_update(ec);
    elm_entry_entry_set(ec->urlbar, b->url);

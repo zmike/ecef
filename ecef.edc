@@ -15,6 +15,7 @@ collections {
          public urlbar_visible = 0;
          public pagelist_visible = 0;
          public pagelist_locked = 0;
+         public pagelist_available = 0;
 
          public message(Msg_Type:type, id, ...) {
             if (type == MSG_INT_SET) {
@@ -33,6 +34,17 @@ collections {
          }
       }
       parts {
+         program { signal: "ecef,pages,available"; source: "ecef";
+            script {
+               set_int(pagelist_available, 1);
+            }
+         }
+         program { signal: "ecef,pages,unavailable"; source: "ecef";
+            script {
+               set_int(pagelist_available, 0);
+            }
+            after: "hide_pagelist";
+         }
          rect { "base";
             desc { color: 0 0 0 255; }
          }
@@ -295,7 +307,7 @@ collections {
          program { signal: "mouse,in"; source: "left_events";
             script {
                stop_program(get_program_id("hide_pagelist_delayed"));
-               if (!get_int(pagelist_visible)) {
+               if (get_int(pagelist_available) && (!get_int(pagelist_visible))) {
                   run_program(get_program_id("show_pagelist_begin"));
                }
             }
