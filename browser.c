@@ -251,8 +251,6 @@ static void
 pagelist_activated(ECef_Client *ec, Evas_Object *obj EINA_UNUSED, Elm_Object_Item *it)
 {
    Browser *b;
-   int x, y, w, h, bx, by;
-   Edje_Message_Int_Set *msg;
 
    b = elm_object_item_data_get(it);
    browser_swap(ec, b, b->it_clone);
@@ -492,8 +490,13 @@ browser_window_title_update(ECef_Client *ec)
       "Chromium Embedded",
       "Servo"
    };
+   const char *str;
 
-   snprintf(buf, sizeof(buf), "%s - %s", browser_page_string_get(ec->current_page), browser[servo]);
+   if (ec->dialing && ((!ec->current_page) && ec->current_page->swapping))
+     str = "Dialer";
+   else
+     str = browser_page_string_get(ec->current_page);
+   snprintf(buf, sizeof(buf), "%s - %s", str, browser[servo]);
    elm_win_title_set(ec->win, buf);
 }
 
@@ -527,7 +530,10 @@ browser_set(ECef_Client *ec, Browser *b)
    if (b->swapping)
      elm_object_part_content_set(ec->layout, "ecef.swallow.browser", render_image_clone(b));
    else
-     elm_object_part_content_set(ec->layout, "ecef.swallow.browser", b->img);
+     {
+        elm_object_part_content_set(ec->layout, "ecef.swallow.browser", b->img);
+        dialer_unuse(ec);
+     }
    evas_object_size_hint_aspect_set(b->img, EVAS_ASPECT_CONTROL_NONE, -1, -1);
    browser_window_title_update(ec);
    elm_entry_entry_set(ec->urlbar, b->url);

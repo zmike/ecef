@@ -315,6 +315,7 @@ typedef struct Browser
    Eina_Bool loading : 1;
    Eina_Bool swapping : 1;
    Eina_Bool painted : 1;
+   Eina_Bool dialer : 1; //is a dialer browser
 } Browser;
 
 typedef void (*Browser_Clone_Update_Cb)(Browser *b, Evas_Object *img);
@@ -328,6 +329,7 @@ typedef struct ECef_Client
    Evas_Object *pagelist;
    Evas_Object *urlbar;
    Evas_Object *back, *forward, *reload;
+   Evas_Object *dialer;
    Browser *current_page;
    Eina_Hash *browsers;
    Eina_List *pending_pages;
@@ -346,6 +348,7 @@ typedef struct ECef_Client
    Eina_Bool urlbar_visible : 1;
    Eina_Bool pagelist_visible : 1;
    Eina_Bool tooltip_visible : 1;
+   Eina_Bool dialing : 1;
 } ECef_Client;
 
 
@@ -406,6 +409,9 @@ void browser_pagelist_hide(ECef_Client *ec);
 void render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, int h);
 Evas_Object *render_image_clone(Browser *b);
 
+void dialer_populate(ECef_Client *ec);
+void dialer_use(ECef_Client *ec);
+void dialer_unuse(ECef_Client *ec);
 
 # define E_LIST_HANDLER_APPEND(list, type, callback, data) \
   do \

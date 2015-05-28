@@ -52,7 +52,30 @@ collections {
                transition: LINEAR 0.3;
             }
          }
-         swallow { "ecef.swallow.browser"; mouse;
+         swallow { "ecef.swallow.dialer"; mouse;
+            desc {
+               rel1.relative: 0.5 0.5;
+               rel2.relative: 0.5 0.5;
+               link.base: "ecef,dialer,reset" "ecef";
+            }
+            desc { "active";
+               link.base: "ecef,dialer,activate" "ecef";
+               link.transition: LINEAR 0.3;
+            }
+         }
+         rect { "browser_clip";
+            desc {
+               link.base: "ecef,dialer,reset" "ecef";
+            }
+            program { "clip_visible"; signal: "ecef,browser,swap"; source: "ecef";
+               action: STATE_SET "default";
+               target: "browser_clip";
+            }
+            desc { "hidden"; hid;
+               link.base: "ecef,dialer,activate" "ecef";
+            }
+         }
+         swallow { "ecef.swallow.browser"; mouse; clip: "browser_clip";
             desc {
                link.base: "ecef,browser,swap" "ecef";
                link.transition: LINEAR 0.3;
@@ -467,6 +490,48 @@ collections {
                rel2.offset: -4 -9;
                text { font: "Sans"; size: 12;
                }
+            }
+         }
+         rect { "events"; mouse;
+            desc {
+               color: 0 0 0 0;
+            }
+         }
+      }
+   }
+   group { "elm/gengrid/item/default/dialer"; nomouse;
+      data.item: "texts" "ecef.text.title";
+      data.item: "contents" "ecef.swallow.view";
+      parts {
+         rect { "clip";
+            desc {
+               rel1.to: "ecef.swallow.view";
+               rel2.to: "ecef.swallow.view";
+            }
+         }
+         swallow { "ecef.swallow.view"; clip: "clip";
+            desc {
+               rel1.offset: 3 3;
+               aspect: 1 1; aspect_preference: SOURCE;
+               rel2.to_y: "ecef.text.title";
+               rel2.relative: 1 0;
+               rel2.offset: -4 -1;
+            }
+         }
+         text { "ecef.text.title";
+            desc {
+               align: 0.0 0.0;
+               rel1.relative: 0 1;
+               rel1.offset: 1 -9;
+               rel2.offset: -4 -9;
+               text { font: "Sans"; size: 12; }
+               link.base: "mouse,out" "events";
+               link.transition: LINEAR 0.15;
+            }
+            desc { "mouse"; inherit;
+               text { font: "Sans:style=Bold"; }
+               link.base: "mouse,in" "events";
+               link.transition: LINEAR 0.15;
             }
          }
          rect { "events"; mouse;

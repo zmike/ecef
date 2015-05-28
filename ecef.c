@@ -304,7 +304,8 @@ main(int argc, char *argv[])
      }
 
    window_info.parent_window = elm_win_window_id_get(win);
-   browser_new(ec, "http://en.wikipedia.org", 1);
+   dialer_populate(ec);
+   dialer_use(ec);
 
    if (!servo)
      ecore_timer_add(0.01, timer, NULL);
