@@ -116,6 +116,28 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
      }
    else if ((!strcmp(ev->key, "t")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
      dialer_use(ec);
+   else if ((!strcmp(ev->key, "w")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
+     {
+        if (ec->dialing && ec->current_page)
+          dialer_unuse(ec);
+        else if (ec->current_page)
+          {
+             /* check focus stack */
+             if (EINA_INLIST_GET(ec->current_page)->next)
+               {
+                  Browser *bn;
+
+                  bn = EINA_INLIST_CONTAINER_GET(EINA_INLIST_GET(ec->current_page)->next, Browser);
+                  ec->current_page->deleted = 1;
+                  browser_swap(ec, bn, bn->it_clone);
+               }
+             else
+               {
+                  elm_object_item_del(ec->current_page->it);
+                  dialer_use(ec);
+               }
+          }
+     }
    else if ((!strcmp(ev->key, "Left")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
      {
         if (ec->current_page && ec->current_page->can_back)

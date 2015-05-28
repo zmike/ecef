@@ -317,6 +317,7 @@ typedef struct Browser
    Eina_Bool swapping : 1;
    Eina_Bool painted : 1;
    Eina_Bool dialer : 1; //is a dialer browser
+   Eina_Bool deleted : 1; //is a dialer browser
 } Browser;
 
 typedef void (*Browser_Clone_Update_Cb)(Browser *b, Evas_Object *img);

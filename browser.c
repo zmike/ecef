@@ -303,11 +303,18 @@ static void
 page_swapped(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED, const char *src EINA_UNUSED)
 {
    ECef_Client *ec = d;
+   Evas_Object *img;
+   Browser *b;
 
    if (ec->need_resize)
      browser_resize(ec);
    ec->current_page->swapping = 0;
-   evas_object_del(elm_object_part_content_unset(ec->layout, "ecef.swallow.swap"));
+   img = elm_object_part_content_unset(ec->layout, "ecef.swallow.swap");
+   b = evas_object_data_get(img, "browser");
+   if (b && b->deleted)
+     elm_object_item_del(b->it);
+   else
+     evas_object_del(img);
    elm_object_part_content_set(ec->layout, "ecef.swallow.browser", ec->current_page->img);
 }
 
