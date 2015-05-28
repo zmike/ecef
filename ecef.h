@@ -343,6 +343,7 @@ typedef struct ECef_Client
    cef_browser_settings_t *browser_settings;
    Eina_Stringshare *status;
    Eina_Stringshare *tooltip;
+   Ecore_Timer *dialer_resize_timer;
    Eina_Bool urlbar_changed : 1;
    Eina_Bool need_resize : 1;
    Eina_Bool urlbar_visible : 1;

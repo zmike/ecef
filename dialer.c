@@ -1,11 +1,5 @@
 #include "ecef.h"
 
-/* pages:
- * 
- * broscience
- * gold's gym
- * ON powder
- */
 
 static const char *dialers[] =
 {
@@ -14,6 +8,9 @@ static const char *dialers[] =
    "http://www.goldsgym.com/",
    "http://www.optimumnutrition.com/",
 };
+
+#define DIALER_MINW 100
+#define DIALER_MINH 120
 
 static char *
 dialer_item_text_get(Browser *b, Evas_Object *obj EINA_UNUSED, const char *part)
@@ -121,13 +118,37 @@ dialer_deactivate(ECef_Client *ec, ...)
      }
 }
 
+static Eina_Bool
+dialer_resize(ECef_Client *ec)
+{
+   int w, h, mw, mh, rows;
+
+   evas_object_geometry_get(ec->win, NULL, NULL, &w, &h);
+
+   rows = lround(floor(sqrt(EINA_C_ARRAY_LENGTH(dialers))));
+   mh = (h - MAX((double)h * 0.1, 50)) / rows;
+   mh = MAX(mh, DIALER_MINH);
+   mw = (mh * 100) / 120;
+   elm_gengrid_item_size_set(ec->dialer, mw, mh);
+   ec->dialer_resize_timer = NULL;
+   return EINA_FALSE;
+}
+
+static void
+dialer_win_resize(ECef_Client *ec, ...)
+{
+   if (!ec->dialer_resize_timer)
+     ec->dialer_resize_timer = ecore_timer_add(0.1, (Ecore_Task_Cb)dialer_resize, ec);
+}
+
 void
 dialer_populate(ECef_Client *ec)
 {
    unsigned int i;
 
    ec->dialer = elm_gengrid_add(ec->win);
-   elm_gengrid_item_size_set(ec->dialer, 100, 120);
+   dialer_resize(ec);
+   evas_object_event_callback_add(ec->win, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)dialer_win_resize, ec);
    elm_object_style_set(ec->dialer, "dialer");
    elm_scroller_bounce_set(ec->dialer, 0, 0);
    elm_scroller_policy_set(ec->dialer, ELM_SCROLLER_POLICY_AUTO, ELM_SCROLLER_POLICY_AUTO);
