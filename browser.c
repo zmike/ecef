@@ -44,6 +44,8 @@ browser_page_del(Browser *b, Evas_Object *obj EINA_UNUSED)
      elm_layout_signal_emit(ec->layout, "ecef,pages,unavailable", "ecef");
    browser_get_host(b->browser)->close_browser(browser_get_host(b->browser), 0);
    ec->focus_stack = eina_inlist_remove(ec->focus_stack, EINA_INLIST_GET(b));
+   if (ec->current_page == b)
+     ec->current_page = NULL;
    EINA_LIST_FREE(b->clones, o)
      evas_object_del(o);
    evas_object_del(b->img);
