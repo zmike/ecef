@@ -234,10 +234,15 @@ urlbar_activate(ECef_Client *ec, ...)
    if (urlbar_scheme_parse(s))
      {
         //yay a valid scheme!
-        cef_string_from_utf8(s, len, &str);
-        fr = ec->current_page->browser->get_main_frame(ec->current_page->browser);
-        fr->load_url(fr, &str);
-        cef_string_clear(&str);
+        if (ec->current_page)
+          {
+             cef_string_from_utf8(s, len, &str);
+             fr = ec->current_page->browser->get_main_frame(ec->current_page->browser);
+             fr->load_url(fr, &str);
+             cef_string_clear(&str);
+          }
+        else
+          browser_new(ec, s, 1, NULL, NULL);
      }
    free(s);
 }
