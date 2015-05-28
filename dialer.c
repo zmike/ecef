@@ -139,7 +139,7 @@ dialer_resize(ECef_Client *ec)
 
    evas_object_geometry_get(ec->win, NULL, NULL, &w, &h);
 
-   rows = lround(floor(sqrt(elm_gengrid_items_count(ec->dialer))));
+   rows = lround(floor(sqrt(EINA_C_ARRAY_LENGTH(dialers))));
    mh = (h - MAX((double)h * 0.1, 50)) / rows;
    mh = MAX(mh, DIALER_MINH);
    mw = (mh * 100) / 120;
@@ -158,7 +158,7 @@ dialer_win_resize(ECef_Client *ec, ...)
 void
 dialer_populate(ECef_Client *ec)
 {
-   unsigned int i, count;
+   unsigned int i;
 
    ec->dialer = elm_gengrid_add(ec->win);
    dialer_resize(ec);
@@ -170,11 +170,7 @@ dialer_populate(ECef_Client *ec)
    evas_object_smart_callback_add(ec->dialer, "activated", (Evas_Smart_Cb)dialer_activated, ec);
    elm_layout_signal_callback_add(ec->layout, "ecef,browser,swapped", "ecef", (Edje_Signal_Cb)dialer_deactivate, ec);
 
-   if (servo)
-     count = 1;
-   else
-     count = EINA_C_ARRAY_LENGTH(dialers);
-   for (i = 0; i < count; i++)
+   for (i = 0; i < EINA_C_ARRAY_LENGTH(dialers); i++)
      browser_new(ec, dialers[i], 0, dialer_browser_cb, NULL);
 }
 
