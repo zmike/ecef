@@ -519,7 +519,7 @@ browser_window_title_update(ECef_Client *ec)
    };
    const char *str;
 
-   if (ec->dialing && ((!ec->current_page) && ec->current_page->swapping))
+   if (ec->dialing && ((!ec->current_page) || ec->current_page->swapping))
      str = "Dialer";
    else
      str = browser_page_string_get(ec->current_page);
