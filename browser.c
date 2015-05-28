@@ -306,7 +306,7 @@ page_swapped(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED,
 }
 
 void
-on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_t *browser)
+browser_page_item_add(ECef_Client *ec, Browser *b)
 {
    static Elm_Gengrid_Item_Class browser_itc = {
       .item_style = "default",
@@ -317,11 +317,19 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
       },
       .version = ELM_GENGRID_ITEM_CLASS_VERSION
    };
+   b->it = elm_gengrid_item_append(ec->pagelist, &browser_itc, b, NULL, NULL);
+}
+
+void
+on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_t *browser)
+{
    ECef_Client *ec = browser_get_client(browser);
    int id, w, h;
    Browser *b;
    cef_browser_host_t *host;
    Eina_Bool first;
+   Browser_Created_Cb cb;
+   void *cbdata;
 
    id = browser->get_identifier(browser);
    host = browser_get_host(browser);
@@ -330,11 +338,18 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.swallow.browser", NULL, NULL, &w, &h);
    render_image_new(ec, b, host, w, h);
    eina_hash_add(ec->browsers, &id, b);
-   b->it = elm_gengrid_item_append(ec->pagelist, &browser_itc, b, NULL, NULL);
    first = (eina_hash_population(ec->browsers) == 1) && (!ec->current_page);
    if (eina_list_data_get(ec->pending_pages))
-     browser_set(ec, b);
+     {
+        browser_page_item_add(ec, b);
+        browser_set(ec, b);
+     }
    ec->pending_pages = eina_list_remove_list(ec->pending_pages, ec->pending_pages);
+   cb = eina_list_data_get(ec->create_cbs);
+   ec->create_cbs = eina_list_remove_list(ec->create_cbs, ec->create_cbs);
+   cbdata = eina_list_data_get(ec->create_datas);
+   ec->create_datas = eina_list_remove_list(ec->create_datas, ec->create_datas);
+   if (cb) cb(cbdata, b);
    if (!first) return;
    /* first browser creation: set up callbacks */
    eina_log_domain_level_set("evas_main", EINA_LOG_LEVEL_ERR);
@@ -367,12 +382,14 @@ browser_get(ECef_Client *ec, cef_browser_t *browser)
 }
 
 void
-browser_new(ECef_Client *ec, const char *url, Eina_Bool pending)
+browser_new(ECef_Client *ec, const char *url, Eina_Bool pending, Browser_Created_Cb cb, void *data)
 {
    cef_string_t u = {0};
 
    cef_string_from_utf8(url, strlen(url), &u);
-   ec->pending_pages = eina_list_append(ec->pending_pages, (void*)pending);
+   ec->pending_pages = eina_list_append(ec->pending_pages, (void*)(size_t)pending);
+   ec->create_cbs = eina_list_append(ec->create_cbs, cb);
+   ec->create_datas = eina_list_append(ec->create_datas, data);
    cef_browser_host_create_browser(ec->window_info, &ec->client, &u, ec->browser_settings, NULL);
    cef_string_clear(&u);
 }

@@ -312,6 +312,7 @@ typedef struct Browser
 } Browser;
 
 typedef void (*Browser_Clone_Update_Cb)(Browser *b, Evas_Object *img);
+typedef void (*Browser_Created_Cb)(void *data, Browser *b);
 
 typedef struct ECef_Client
 {
@@ -324,6 +325,8 @@ typedef struct ECef_Client
    Browser *current_page;
    Eina_Hash *browsers;
    Eina_List *pending_pages;
+   Eina_List *create_cbs;
+   Eina_List *create_datas;
    Browser_Clone_Update_Cb clone_update_cb;
    cef_render_handler_t *render_handler;
    cef_display_handler_t *display_handler;
@@ -372,11 +375,13 @@ modifiers_get(Evas_Modifier *m) {
 Evas_Object *button_add(Evas_Object *parent, const char *icon, const char *text, const char *style, Evas_Smart_Cb cb, void *data);
 
 void on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_t *browser);
-void browser_new(ECef_Client *ec, const char *url, Eina_Bool pending);
+void browser_new(ECef_Client *ec, const char *url, Eina_Bool pending, Browser_Created_Cb cb, void *cbdata);
+void browser_page_item_add(ECef_Client *ec, Browser *b);
 Browser *browser_get(ECef_Client *ec, cef_browser_t *browser);
 char *browser_page_string_get(Browser *b);
 void browser_window_title_update(ECef_Client *ec);
 void browser_set(ECef_Client *ec, Browser *b);
+void browser_swap(ECef_Client *ec, Browser *b, Evas_Object *clone);
 void browser_back(cef_browser_t *browser, ...);
 void browser_forward(cef_browser_t *browser, ...);
 void browser_reload(cef_browser_t *browser, ...);
