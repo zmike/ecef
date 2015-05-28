@@ -43,6 +43,7 @@ browser_page_del(Browser *b, Evas_Object *obj EINA_UNUSED)
    if (!elm_gengrid_items_count(ec->pagelist))
      elm_layout_signal_emit(ec->layout, "ecef,pages,unavailable", "ecef");
    browser_get_host(b->browser)->close_browser(browser_get_host(b->browser), 0);
+   ec->focus_stack = eina_inlist_remove(ec->focus_stack, EINA_INLIST_GET(b));
    EINA_LIST_FREE(b->clones, o)
      evas_object_del(o);
    evas_object_del(b->img);
@@ -347,6 +348,7 @@ on_after_browser_created(cef_life_span_handler_t *self EINA_UNUSED, cef_browser_
    if (eina_list_data_get(ec->pending_pages))
      {
         browser_page_item_add(ec, b);
+        ec->focus_stack = eina_inlist_prepend(ec->focus_stack, EINA_INLIST_GET(b));
         browser_set(ec, b);
      }
    ec->pending_pages = eina_list_remove_list(ec->pending_pages, ec->pending_pages);
@@ -542,6 +544,7 @@ browser_set(ECef_Client *ec, Browser *b)
    browser_window_title_update(ec);
    elm_entry_entry_set(ec->urlbar, b->url);
    host = browser_get_host(ec->current_page->browser);
+   ec->focus_stack = eina_inlist_promote(ec->focus_stack, EINA_INLIST_GET(b));
    //host->set_focus(host, 1);
    if (b->swapping)
      elm_object_signal_emit(ec->layout, "ecef,browser,swap", "ecef");

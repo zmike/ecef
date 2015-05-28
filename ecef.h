@@ -291,6 +291,7 @@ extern Eina_List *clients;
 
 typedef struct Browser
 {
+   EINA_INLIST;
    cef_browser_t *browser;
    Evas_Object *img;
    Eina_Stringshare *title;
@@ -332,6 +333,7 @@ typedef struct ECef_Client
    Evas_Object *dialer;
    Browser *current_page;
    Eina_Hash *browsers;
+   Eina_Inlist *focus_stack;
    Eina_List *pending_pages;
    Eina_List *create_cbs;
    Eina_List *create_datas;

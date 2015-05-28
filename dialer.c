@@ -85,6 +85,7 @@ dialer_activated(ECef_Client *ec, Evas_Object *obj EINA_UNUSED, Elm_Object_Item 
    evas_object_layer_set(b->img, 0);
    evas_object_hide(b->img);
    browser_page_item_add(ec, b);
+   ec->focus_stack = eina_inlist_prepend(ec->focus_stack, EINA_INLIST_GET(b));
    browser_swap(ec, b, b->it_clone);
    evas_object_del(b->it_clone);
    elm_object_item_data_set(it, NULL);
