@@ -318,6 +318,7 @@ render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, i
    b->w = w, b->h = h;
    if (!b->img)
      b->img = i = elm_image_add(ec->win);
+   evas_object_name_set(i, "browser");
    evas_object_resize(i, w, h);
    evas_object_data_set(i, "browser_host", host);
    evas_object_data_set(i, "Browser", b);
@@ -359,6 +360,7 @@ render_image_clone(Browser *b)
      ec->clone_update_cb(b, img);
    else if (!gl_avail)
      evas_object_image_source_set(elm_image_object_get(img), elm_image_object_get(b->img));
+   evas_object_name_set(img, "browser clone");
    b->clones = eina_list_append(b->clones, img);
    return img;
 }
