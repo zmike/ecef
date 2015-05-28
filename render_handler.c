@@ -76,13 +76,27 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
      render_image_gl_paint(b);
    else
      {
+        Eina_List *l;
+
         o = elm_image_object_get(img);
         evas_object_image_size_set(o, width, height);
         evas_object_image_data_copy_set(o, (void*)buffer);
         for (r = 0; r < dirtyRectsCount; r++)
           evas_object_image_data_update_add(o, dirtyRects[r].x, dirtyRects[r].y, dirtyRects[r].width, dirtyRects[r].height);
+        EINA_LIST_FOREACH(b->clones, l, o)
+          {
+             o = elm_image_object_get(o);
+             evas_object_image_size_set(o, width, height);
+             evas_object_image_data_copy_set(o, (void*)buffer);
+             for (r = 0; r < dirtyRectsCount; r++)
+               evas_object_image_data_update_add(o, dirtyRects[r].x, dirtyRects[r].y, dirtyRects[r].width, dirtyRects[r].height);
+          }
         if (first || (b->w != b->pw) || (b->h != b->ph))
-          eo_do(img, elm_obj_image_sizing_eval());
+          {
+             eo_do(img, elm_obj_image_sizing_eval());
+             EINA_LIST_FOREACH(b->clones, l, o)
+               eo_do(img, elm_obj_image_sizing_eval());
+          }
      }
    EINA_LIST_FOREACH(b->clones, l, o)
      evas_object_size_hint_aspect_set(o, EVAS_ASPECT_CONTROL_BOTH, b->w, b->h);
@@ -359,7 +373,17 @@ render_image_clone(Browser *b)
    if (ec->clone_update_cb)
      ec->clone_update_cb(b, img);
    else if (!gl_avail)
-     evas_object_image_source_set(elm_image_object_get(img), elm_image_object_get(b->img));
+     {
+        Evas_Object *o;
+        void *px;
+
+        o = elm_image_object_get(img);
+        px = evas_object_image_data_get(elm_image_object_get(b->img), 0);
+        evas_object_image_size_set(o, b->w, b->h);
+        evas_object_image_data_copy_set(o, px);
+        evas_object_image_data_update_add(o, 0, 0, b->w, b->h);
+        evas_object_image_data_set(elm_image_object_get(b->img), px);
+     }
    evas_object_name_set(img, "browser clone");
    evas_object_data_set(img, "browser", b);
    b->clones = eina_list_append(b->clones, img);
