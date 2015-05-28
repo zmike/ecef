@@ -96,6 +96,8 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
           }
         else if (ec->pagelist_visible)
           browser_pagelist_hide(ec);
+        else if (ec->dialing && ec->current_page)
+          dialer_unuse(ec);
         else if (ec->urlbar_visible)
           browser_urlbar_hide(ec);
         else
@@ -113,9 +115,7 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
           browser_reload(ec->current_page->browser);
      }
    else if ((!strcmp(ev->key, "t")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
-     {
-        browser_new(ec, "about:blank", 1, NULL, NULL);
-     }
+     dialer_use(ec);
    else if ((!strcmp(ev->key, "Left")) && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
      {
         if (ec->current_page && ec->current_page->can_back)
