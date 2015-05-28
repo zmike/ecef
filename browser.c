@@ -21,7 +21,6 @@ browser_resize(ECef_Client *ec, ...)
         edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.swallow.browser", &x, &y, &w, &h);
         ecore_x_window_move_resize(host->get_window_handle(host), x, y, w, h);
      }
-   elm_gengrid_item_update(ec->current_page->it);
 }
 
 static char *
