@@ -400,15 +400,12 @@ collections {
       data.item: "contents" "ecef.swallow.view";
       parts {
          rect { "selection";
-            scale: 1;
             desc {
                color: 222 222 222 0;
                hid;
             }
             desc { "selected";
-               inherit: "default";
                color: 222 222 222 160;
-               vis;
             }
          }
          program {
