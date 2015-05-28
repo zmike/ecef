@@ -293,9 +293,11 @@ collections {
             desc {
                min: LEFT_EVENT_SIZE 0;
                max: LEFT_EVENT_SIZE -1;
-               align: 0 0.5;
+               align: 0 0;
                fixed: 1 0;
                color: 0 0 0 0;
+               rel1.to_y: "ecef.swallow.urlbar";
+               rel1.relative: 0 1;
                rel2.relative: 0 1;
             }
             desc { "hint_activate"; inherit: "default";
