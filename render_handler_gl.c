@@ -1,7 +1,5 @@
 #include "ecef.h"
 
-#ifdef HAVE_SERVO
-
 #define GLERR do { on_error(api, __FUNCTION__, __LINE__); } while (0)
 
 static void
@@ -306,5 +304,3 @@ render_image_gl_setup(Browser *b, int w, int h)
    elm_glview_size_set(b->img, w, h);
    elm_glview_changed_set(b->img);
 }
-
-#endif
