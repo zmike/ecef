@@ -6,6 +6,7 @@ browser_resize(ECef_Client *ec, ...)
 {
    cef_browser_host_t *host;
 
+   if (!ec->current_page) return;
    host = browser_get_host(ec->current_page->browser);
    if (!windowed)
      host->was_resized(host);
