@@ -261,6 +261,8 @@ main(int argc, char *argv[])
       Evas_Object *r;
 
       r = evas_object_rectangle_add(evas_object_evas_get(win));
+      evas_object_color_set(r, 0, 0, 0, 0);
+      evas_object_pass_events_set(r, 1);
       evas_object_size_hint_min_set(r, 640, 480);
       elm_object_part_content_set(ec->layout, "ecef.swallow.browser", r);
    }
