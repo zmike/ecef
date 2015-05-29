@@ -44,12 +44,15 @@ on_status_message(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *browse
 {
    ECef_Client *ec;
    cef_string_utf8_t u8 = {0};
+   Browser *b;
 
    ec = browser_get_client(browser);
+   b = browser_get(ec, browser);
    if (text && text->str)
      cef_string_to_utf8(text->str, text->length, &u8);
    eina_stringshare_replace(&ec->status, u8.str);
-   tooltip_update(ec);
+   if ((!ec->dialing) && (ec->current_page == b))
+     tooltip_update(ec);
    cef_string_utf8_clear(&u8);
 }
 
@@ -58,12 +61,15 @@ on_tooltip(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *browser, cef_
 {
    ECef_Client *ec;
    cef_string_utf8_t u8 = {0};
+   Browser *b;
 
    ec = browser_get_client(browser);
+   b = browser_get(ec, browser);
    if (text && text->str)
      cef_string_to_utf8(text->str, text->length, &u8);
    eina_stringshare_replace(&ec->tooltip, u8.str);
-   tooltip_update(ec);
+   if ((!ec->dialing) && (ec->current_page == b))
+     tooltip_update(ec);
    cef_string_utf8_clear(&u8);
 
    return 1;
