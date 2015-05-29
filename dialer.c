@@ -135,6 +135,8 @@ dialer_deactivate(ECef_Client *ec, ...)
         if (b && is_glview())
           elm_glview_render_policy_set(b->img, ELM_GLVIEW_RENDER_POLICY_ON_DEMAND);
      }
+   if (ec->current_page)
+     elm_entry_entry_set(ec->urlbar, ec->current_page->url);
 }
 
 static Eina_Bool
@@ -186,6 +188,7 @@ dialer_use(ECef_Client *ec)
    Elm_Object_Item *it;
 
    if (ec->dialing) return;
+   elm_entry_entry_set(ec->urlbar, NULL);
    elm_object_part_content_set(ec->layout, "ecef.swallow.dialer", ec->dialer);
    elm_layout_signal_emit(ec->layout, "ecef,dialer,activate", "ecef");
    ec->dialing = 1;
