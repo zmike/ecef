@@ -695,8 +695,7 @@ collections {
                rel2.offset: -4 -1;
                rel2.relative: 1 0;
                text { font: "Sans:style=Bold"; size: 12;
-                  min: 1 1;
-                  ellipsis: -1;
+                  min: 0 1;
                }
             }
          }
@@ -709,8 +708,7 @@ collections {
                rel1.offset: 1 4;
                rel2.offset: -4 -1;
                text { font: "Sans"; size: 12;
-                  min: 1 1;
-                  ellipsis: -1;
+                  min: 0 1;
                }
             }
          }
