@@ -207,3 +207,17 @@ dialer_unuse(ECef_Client *ec)
    if (ec->dialing)
      dialer_deactivate(ec);
 }
+
+void
+dialer_activate_num(ECef_Client *ec, unsigned int n)
+{
+   Elm_Object_Item *it;
+   unsigned int i;
+
+   for (i = 0, it = elm_gengrid_first_item_get(ec->dialer); it && (i <= n); i++, it = elm_gengrid_item_next_get(it))
+     {
+        if (i != n) continue;
+        dialer_activated(ec, NULL, it);
+        break;
+     }
+}

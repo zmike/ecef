@@ -148,6 +148,16 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
         if (ec->current_page && ec->current_page->can_forward)
           browser_forward(ec->current_page->browser);
      }
+   else if (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL)
+     {
+        unsigned int num;
+
+        errno = 0;
+        num = strtoul(ev->key, NULL, 10);
+        if (errno) return ECORE_CALLBACK_RENEW;
+        if (num) num--;
+        dialer_activate_num(ec, num);
+     }
    else
      return ECORE_CALLBACK_RENEW;
    return ECORE_CALLBACK_CANCEL;

@@ -418,6 +418,7 @@ Evas_Object *render_image_clone(Browser *b);
 void dialer_populate(ECef_Client *ec);
 void dialer_use(ECef_Client *ec);
 void dialer_unuse(ECef_Client *ec);
+void dialer_activate_num(ECef_Client *ec, unsigned int n);
 
 # define E_LIST_HANDLER_APPEND(list, type, callback, data) \
   do \
