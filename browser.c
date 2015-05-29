@@ -123,7 +123,7 @@ urlbar_visible(void *d, ...)
 {
    ECef_Client *ec = d;
 
-   if (!ec->urlbar_changed)
+   if ((!ec->urlbar_visible) && (!ec->urlbar_changed))
      {
         elm_object_focus_set(ec->urlbar, 1);
         elm_entry_select_all(ec->urlbar);
@@ -143,8 +143,7 @@ static void
 urlbar_changed(ECef_Client *ec, Evas_Object *obj, void *ev EINA_UNUSED)
 {
    /* ensure urlbar does not hide while user is typing */
-   if (ec->urlbar_changed)
-     browser_urlbar_show(ec, 0);
+   browser_urlbar_show(ec, 0);
 }
 
 
@@ -454,12 +453,7 @@ browser_urlbar_show(ECef_Client *ec, Eina_Bool changed)
           elm_layout_signal_emit(ec->layout, "ecef,urlbar,change", "ecef");
      }
    else
-     {
-        if (ec->urlbar_visible)
-          urlbar_visible(ec);
-        else
-          elm_layout_signal_emit(ec->layout, "ecef,urlbar,show", "ecef");
-     }
+     elm_layout_signal_emit(ec->layout, "ecef,urlbar,show", "ecef");
    ec->urlbar_changed = changed;
 }
 
