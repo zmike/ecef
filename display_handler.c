@@ -21,7 +21,7 @@ tooltip_update(ECef_Client *ec)
    if ((!ec->tooltip) && (!ec->status))
      {
         if (ec->tooltip_visible)
-          elm_object_tooltip_hide(ec->win);
+          elm_object_tooltip_hide(ec->layout);
         ec->tooltip_visible = 0;
         return;
      }
@@ -32,9 +32,9 @@ tooltip_update(ECef_Client *ec)
      eina_strbuf_append(buf, "<ps/>");
    if (ec->status)
      eina_strbuf_append_printf(buf, "<link>%s</link>", ec->status);
-   elm_object_tooltip_text_set(ec->win, eina_strbuf_string_get(buf));
-   elm_object_tooltip_style_set(ec->win, "browser");
-   elm_object_tooltip_show(ec->win);
+   elm_object_tooltip_text_set(ec->layout, eina_strbuf_string_get(buf));
+   elm_object_tooltip_style_set(ec->layout, "browser");
+   elm_object_tooltip_show(ec->layout);
    eina_strbuf_free(buf);
    ec->tooltip_visible = 1;
 }
