@@ -161,6 +161,7 @@ dialer_populate(ECef_Client *ec)
    unsigned int i;
 
    ec->dialer = elm_gengrid_add(ec->win);
+   elm_object_focus_allow_set(ec->dialer, 0);
    dialer_resize(ec);
    evas_object_event_callback_add(ec->win, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)dialer_win_resize, ec);
    elm_object_style_set(ec->dialer, "dialer");
