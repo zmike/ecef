@@ -10,7 +10,7 @@ static const char *dialers[] =
    "http://pinterest.com",
    "http://reddit.com",
    "http://www.optimumnutrition.com/",
-   "http://www.twitter.com",
+   "https://twitter.com/schwarzenegger",
    "http://yahoo.com",
 };
 
