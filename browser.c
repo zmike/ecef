@@ -261,6 +261,7 @@ urlbar_activate(ECef_Client *ec, ...)
         else
           browser_new(ec, s, 1, NULL, NULL);
      }
+   browser_urlbar_hide(ec);
    free(s);
 }
 
