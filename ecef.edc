@@ -299,6 +299,14 @@ collections {
                   run_program(get_program_id("hide_urlbar_delayed"));
             }
          }
+         program { signal: "mouse,move"; source: "top_events";
+            script {
+               if (get_int(urlbar_changed)) {
+                  stop_program(get_program_id("hide_urlbar_delayed"));
+                  run_program(get_program_id("hide_urlbar_delayed"));
+               }
+            }
+         }
          rect { "left_events"; mouse; repeat; scale;
             desc {
                min: LEFT_EVENT_SIZE 0;
@@ -329,6 +337,14 @@ collections {
             script {
                if (!get_int(pagelist_locked))
                   run_program(get_program_id("hide_pagelist_delayed"));
+            }
+         }
+         program { signal: "mouse,move"; source: "ecef.swallow.pagelist";
+            script {
+               if (!get_int(pagelist_locked)) {
+                  stop_program(get_program_id("hide_pagelist_delayed"));
+                  run_program(get_program_id("hide_pagelist_delayed"));
+               }
             }
          }
          rect { "loading_clip";
