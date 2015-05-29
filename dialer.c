@@ -4,14 +4,15 @@
 static const char *dialers[] =
 {
    "http://en.wikipedia.org",
+   "http://blog.servo.org/2015/05/28/twis-33/",
    "http://broscience.com/",
    "http://cnn.com",
    "http://www.goldsgym.com/",
    "http://pinterest.com",
    "http://reddit.com",
    "http://www.optimumnutrition.com/",
-   "https://twitter.com/schwarzenegger",
    "http://yahoo.com",
+   "https://twitter.com/schwarzenegger",
 };
 
 #define DIALER_MINW 100
