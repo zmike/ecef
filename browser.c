@@ -272,6 +272,7 @@ pagelist_activated(ECef_Client *ec, Evas_Object *obj EINA_UNUSED, Elm_Object_Ite
 
    b = elm_object_item_data_get(it);
    browser_swap(ec, b, b->it_clone);
+   browser_pagelist_hide(ec);
 }
 
 static void
