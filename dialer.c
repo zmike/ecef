@@ -93,6 +93,9 @@ dialer_replace_cb(void *d, Browser *b)
    b->it = d;
    evas_object_layer_set(b->img, -100);
    evas_object_pass_events_set(b->img, 1);
+   elm_object_item_tooltip_content_cb_set(b->it, (Elm_Tooltip_Item_Content_Cb)browser_tooltip_cb, b, NULL);
+   elm_object_item_tooltip_style_set(b->it, "browser");
+   elm_object_item_tooltip_window_mode_set(b->it, 1);
    elm_gengrid_item_update(d);
 }
 
