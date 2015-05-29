@@ -80,6 +80,7 @@ dialer_browser_cb(void *d EINA_UNUSED, Browser *b)
    if (ec->dialing && is_glview())
      elm_glview_render_policy_set(b->img, ELM_GLVIEW_RENDER_POLICY_ALWAYS);
    evas_object_layer_set(b->img, -100);
+   evas_object_pass_events_set(b->img, 1);
 }
 
 static void
@@ -88,6 +89,7 @@ dialer_replace_cb(void *d, Browser *b)
    elm_object_item_data_set(d, b);
    b->it = d;
    evas_object_layer_set(b->img, -100);
+   evas_object_pass_events_set(b->img, 1);
    elm_gengrid_item_update(d);
 }
 
@@ -101,6 +103,7 @@ dialer_activated(ECef_Client *ec, Evas_Object *obj EINA_UNUSED, Elm_Object_Item 
    if (is_glview())
      elm_glview_render_policy_set(b->img, ELM_GLVIEW_RENDER_POLICY_ON_DEMAND);
    evas_object_layer_set(b->img, 0);
+   evas_object_pass_events_set(b->img, 0);
    evas_object_hide(b->img);
    browser_page_item_add(ec, b);
    ec->focus_stack = eina_inlist_prepend(ec->focus_stack, EINA_INLIST_GET(b));
