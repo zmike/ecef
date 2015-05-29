@@ -50,7 +50,7 @@ dialer_item_content_get(Browser *b, Evas_Object *obj, const char *part)
 
    if (!b) return NULL;
    if (eina_streq(part, "ecef.swallow.view"))
-     return b->it_clone = render_image_clone(b);
+     return b->it_clone = render_image_clone(b, obj);
 
    if (!b->favicon) return NULL;
    img = eina_hash_find(browser_get_client(b->browser)->favicons, b->favicon);
@@ -77,6 +77,9 @@ dialer_browser_cb(void *d EINA_UNUSED, Browser *b)
 
    ec = browser_get_client(b->browser);
    b->it = elm_gengrid_item_append(ec->dialer, &dialer_itc, b, NULL, NULL);
+   elm_object_item_tooltip_content_cb_set(b->it, (Elm_Tooltip_Item_Content_Cb)browser_tooltip_cb, b, NULL);
+   elm_object_item_tooltip_style_set(b->it, "browser");
+   elm_object_item_tooltip_window_mode_set(b->it, 1);
    if (ec->dialing && is_glview())
      elm_glview_render_policy_set(b->img, ELM_GLVIEW_RENDER_POLICY_ALWAYS);
    evas_object_layer_set(b->img, -100);

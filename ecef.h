@@ -411,9 +411,10 @@ void browser_urlbar_hide(ECef_Client *ec);
 void browser_urlbar_set(ECef_Client *ec, const char *url);
 void browser_pagelist_show(ECef_Client *ec);
 void browser_pagelist_hide(ECef_Client *ec);
+Evas_Object *browser_tooltip_cb(Browser *b, Evas_Object *obj, Evas_Object *tooltip, Elm_Object_Item *it);
 
 void render_image_new(ECef_Client *ec, Browser *b, cef_browser_host_t *host, int w, int h);
-Evas_Object *render_image_clone(Browser *b);
+Evas_Object *render_image_clone(Browser *b, Evas_Object *parent);
 
 void dialer_populate(ECef_Client *ec);
 void dialer_use(ECef_Client *ec);

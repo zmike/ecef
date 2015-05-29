@@ -361,13 +361,13 @@ render_image_clone_del(void *data, Evas *e, Evas_Object *obj, void *event_info)
 }
 
 Evas_Object *
-render_image_clone(Browser *b)
+render_image_clone(Browser *b, Evas_Object *parent)
 {
    Evas_Object *img;
    ECef_Client *ec;
 
    ec = browser_get_client(b->browser);
-   img = elm_image_add(ec->win);
+   img = elm_image_add(parent);
    evas_object_size_hint_aspect_set(img, EVAS_ASPECT_CONTROL_BOTH, b->w, b->h);
    evas_object_event_callback_add(img, EVAS_CALLBACK_DEL, render_image_clone_del, b);
    if (ec->clone_update_cb)

@@ -620,6 +620,7 @@ collections {
    group { "elm/tooltip/base/browser"; nomouse;
       data.item: "pad_x" "5";
       data.item: "pad_y" "5";
+      data.item: "transparent" "enabled";
       parts {
          rect { "fader";
             desc {
@@ -629,6 +630,74 @@ collections {
             }
          }
          swallow { "elm.swallow.content"; }
+      }
+   }
+
+   group { "elm/layout/ecef/page_tooltip"; nomouse;
+      data.item: "pad_x" "5";
+      data.item: "pad_y" "5";
+      data.item: "transparent" "enabled";
+      parts {
+         rect { "fader";
+            desc {
+               color: 0 0 0 222;
+               rel1.offset: -2 -2;
+               rel2.offset: 1 1;
+            }
+         }
+         swallow { "ecef.swallow.sizer";
+            desc { align: 0 0;
+               rel2.relative: 1 0;
+            }
+         }
+         swallow { "ecef.swallow.view";
+            desc {
+               rel1.offset: 3 3;
+               aspect: 1 1; aspect_preference: SOURCE;
+               rel.to: "ecef.swallow.sizer";
+            }
+         }
+         rect { "favicon_clip";
+            desc {
+               color: 255 255 255 192;
+            }
+         }
+         swallow { "ecef.swallow.favicon"; clip: "favicon_clip";
+            desc { align: 0 1;
+               aspect: 1 1; aspect_preference: SOURCE;
+               rel1.relative: 0 1;
+               rel1.to_y: "ecef.swallow.sizer";
+            }
+         }
+         text { "ecef.text.title";
+            desc {
+               align: 0.0 0.0;
+               rel1.relative: 1 1;
+               rel1.to_x: "ecef.swallow.favicon";
+               rel1.to_y: "ecef.swallow.view";
+               rel1.offset: 1 4;
+               rel2.offset: -4 -1;
+               rel2.relative: 1 0;
+               text { font: "Sans:style=Bold"; size: 12;
+                  min: 1 1;
+                  ellipsis: -1;
+               }
+            }
+         }
+         text { "ecef.text.url";
+            desc {
+               align: 0.0 0.0;
+               rel1.relative: 1 1;
+               rel1.to_x: "ecef.swallow.favicon";
+               rel1.to_y: "ecef.text.title";
+               rel1.offset: 1 4;
+               rel2.offset: -4 -1;
+               text { font: "Sans"; size: 12;
+                  min: 1 1;
+                  ellipsis: -1;
+               }
+            }
+         }
       }
    }
 #define IC(Name, File, Min, Max) \

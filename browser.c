@@ -60,7 +60,7 @@ browser_page_content_get(Browser *b, Evas_Object *obj, const char *part)
 
    if (!b) return NULL;
    if (eina_streq(part, "ecef.swallow.view"))
-     return b->it_clone = render_image_clone(b);
+     return b->it_clone = render_image_clone(b, obj);
 
    if (!b->favicon) return NULL;
    img = eina_hash_find(browser_get_client(b->browser)->favicons, b->favicon);
@@ -347,6 +347,9 @@ browser_page_item_add(ECef_Client *ec, Browser *b)
       .version = ELM_GENGRID_ITEM_CLASS_VERSION
    };
    b->it = elm_gengrid_item_append(ec->pagelist, &browser_itc, b, NULL, NULL);
+   elm_object_item_tooltip_content_cb_set(b->it, (Elm_Tooltip_Item_Content_Cb)browser_tooltip_cb, b, NULL);
+   elm_object_item_tooltip_style_set(b->it, "browser");
+   elm_object_item_tooltip_window_mode_set(b->it, 1);
 }
 
 void
@@ -550,13 +553,13 @@ browser_set(ECef_Client *ec, Browser *b)
              ecore_x_netwm_window_state_set(host->get_window_handle(host), state, 1);
           }
         if (b->swapping)
-          elm_object_part_content_set(ec->layout, "ecef.swallow.swap", render_image_clone(ec->current_page));
+          elm_object_part_content_set(ec->layout, "ecef.swallow.swap", render_image_clone(ec->current_page, ec->win));
      }
    else
      evas_object_del(pobj);
    ec->current_page = b;
    if (b->swapping)
-     elm_object_part_content_set(ec->layout, "ecef.swallow.browser", render_image_clone(b));
+     elm_object_part_content_set(ec->layout, "ecef.swallow.browser", render_image_clone(b, ec->win));
    else
      {
         elm_object_part_content_set(ec->layout, "ecef.swallow.browser", b->img);
@@ -657,4 +660,40 @@ browser_favicon_set(ECef_Client *ec, Browser *b, const char *favicon)
      }
    if (f && (ec->current_page == b))
      elm_image_mmap_set(ec->favicon, f, NULL);
+}
+
+Evas_Object *
+browser_tooltip_cb(Browser *b, Evas_Object *obj, Evas_Object *tooltip, Elm_Object_Item *it)
+{
+   Evas_Object *ly, *r;
+   ECef_Client *ec;
+
+   ec = browser_get_client(b->browser);
+   ly = elm_layout_add(tooltip);
+   elm_layout_theme_set(ly, "layout", "ecef", "page_tooltip");
+   elm_object_part_content_set(ly, "ecef.swallow.view", render_image_clone(b, tooltip));
+   r = evas_object_rectangle_add(evas_object_evas_get(tooltip));
+   evas_object_size_hint_min_set(r, lround((double)b->w * 0.75), lround((double)b->h * 0.75));
+   elm_object_part_content_set(ly, "ecef.swallow.sizer", r);
+   elm_object_part_text_set(ly, "ecef.text.title", b->title);
+   elm_object_part_text_set(ly, "ecef.text.url", b->url);
+
+   if (b->favicon)
+     {
+        Evas_Object *img;
+        const Eina_File *f;
+
+        img = eina_hash_find(ec->favicons, b->favicon);
+        if (img)
+          {
+             Evas_Object *ic;
+
+             evas_object_image_mmap_get(elm_image_object_get(img), &f, NULL);
+             ic = elm_image_add(tooltip);
+             elm_image_mmap_set(ic, f, NULL);
+             elm_object_part_content_set(ly, "ecef.swallow.favicon", ic);
+          }
+     }
+
+   return ly;
 }
