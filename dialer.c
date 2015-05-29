@@ -122,7 +122,8 @@ dialer_unrealized(ECef_Client *ec EINA_UNUSED, Evas_Object *obj EINA_UNUSED, Elm
    Browser *b;
 
    b = elm_object_item_data_get(it);
-   b->it_clone = NULL;
+   if (b)
+     b->it_clone = NULL;
 }
 
 static void
