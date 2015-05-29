@@ -245,7 +245,7 @@ render_image_gl_render(Evas_Object *obj)
 #ifdef HAVE_SERVO
    if (servo)
      {
-        host->composite(host);GLERR;
+        host->composite(host); api->glGetError();
      }
    else
 #endif
