@@ -262,6 +262,7 @@ urlbar_activate(ECef_Client *ec, ...)
           browser_new(ec, s, 1, NULL, NULL);
      }
    browser_urlbar_hide(ec);
+   dialer_unuse(ec);
    free(s);
 }
 
