@@ -151,10 +151,11 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
    else if (ec->dialing && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
      {
         unsigned int num;
+        char *p;
 
         errno = 0;
-        num = strtoul(ev->key, NULL, 10);
-        if (errno) return ECORE_CALLBACK_RENEW;
+        num = strtoul(ev->key, &p, 10);
+        if (errno || (ev->key == p)) return ECORE_CALLBACK_RENEW;
         if (num) num--;
         dialer_activate_num(ec, num);
      }
