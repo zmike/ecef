@@ -148,7 +148,7 @@ key_down(void *d EINA_UNUSED, int t EINA_UNUSED, Ecore_Event_Key *ev)
         if (ec->current_page && ec->current_page->can_forward)
           browser_forward(ec->current_page->browser);
      }
-   else if (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL)
+   else if (ec->dialing && (ev->modifiers & ECORE_EVENT_MODIFIER_CTRL))
      {
         unsigned int num;
 
