@@ -252,6 +252,7 @@ main(int argc, char *argv[])
    memset(&browser_settings, 0, sizeof(cef_browser_settings_t));
    settings.size = sizeof(cef_settings_t);
    settings.windowless_rendering_enabled = !windowed;
+   settings.rendering_threads = eina_cpu_count() * 3 / 4;
    browser_settings.size = sizeof(cef_browser_settings_t);
    if (!cef_initialize(&args, &settings, app, NULL))
      return -1;
