@@ -117,6 +117,7 @@ dialer_activated(ECef_Client *ec, Evas_Object *obj EINA_UNUSED, Elm_Object_Item 
    evas_object_del(b->it_clone);
    elm_object_item_data_set(it, NULL);
    elm_gengrid_item_update(it);
+   elm_gengrid_item_selected_set(it, 0);
 }
 
 static void
@@ -186,7 +187,7 @@ dialer_populate(ECef_Client *ec)
    elm_scroller_bounce_set(ec->dialer, 0, 0);
    elm_scroller_policy_set(ec->dialer, ELM_SCROLLER_POLICY_AUTO, ELM_SCROLLER_POLICY_AUTO);
    evas_object_smart_callback_add(ec->dialer, "unrealized", (Evas_Smart_Cb)dialer_unrealized, ec);
-   evas_object_smart_callback_add(ec->dialer, "activated", (Evas_Smart_Cb)dialer_activated, ec);
+   evas_object_smart_callback_add(ec->dialer, "selected", (Evas_Smart_Cb)dialer_activated, ec);
    elm_layout_signal_callback_add(ec->layout, "ecef,browser,swapped", "ecef", (Edje_Signal_Cb)dialer_deactivate, ec);
 
    for (i = 0; i < EINA_C_ARRAY_LENGTH(dialers); i++)
