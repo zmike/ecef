@@ -184,6 +184,12 @@ dialer_populate(ECef_Client *ec)
    dialer_resize(ec);
    evas_object_event_callback_add(ec->win, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)dialer_win_resize, ec);
    elm_object_style_set(ec->dialer, "dialer");
+   if (servo)
+     {
+        Evas_Object *o = elm_bg_add(ec->dialer);
+        elm_bg_file_set(o, "./ecef.edj", "elm/icon/servomeme/default");
+        elm_object_part_content_set(ec->dialer, "elm.swallow.background", o);
+     }
    elm_scroller_bounce_set(ec->dialer, 0, 0);
    elm_scroller_policy_set(ec->dialer, ELM_SCROLLER_POLICY_AUTO, ELM_SCROLLER_POLICY_AUTO);
    evas_object_smart_callback_add(ec->dialer, "unrealized", (Evas_Smart_Cb)dialer_unrealized, ec);
