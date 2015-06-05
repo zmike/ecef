@@ -562,6 +562,22 @@ collections {
             desc {
                rel1.to: "ecef.swallow.view";
                rel2.to: "ecef.swallow.view";
+               color: 255 255 255 170;
+            }
+         }
+         rect { "outline"; clip: "clip";
+            desc {
+               rel.to: "ecef.swallow.view";
+               rel1.offset: -2 -2;
+               rel2.offset: 1 1;
+               color: 0 0 0 255;
+               link.base: "mouse,out" "events";
+               link.transition: LINEAR 0.1;
+            }
+            desc { "active"; inherit;
+               color: 52 153 255 100;
+               link.base: "mouse,in" "events";
+               link.transition: LINEAR 0.1;
             }
          }
          swallow { "ecef.swallow.view"; clip: "clip";
@@ -586,11 +602,14 @@ collections {
             }
          }
          text { "ecef.text.title";
+            effect: GLOW; scale;
             desc {
                align: 0.0 0.0;
                rel1.relative: 0 1;
                rel1.offset: 1 -9;
                rel2.offset: -4 -9;
+               color2: 0 0 0 192;
+               color3: 0 0 0 128;
                text { font: "Sans"; size: 12; }
                link.base: "mouse,out" "events";
                link.transition: LINEAR 0.15;
