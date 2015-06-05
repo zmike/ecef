@@ -3,7 +3,7 @@
 
 static const char *dialers[] =
 {
-   "http://en.wikipedia.org",
+   "http://en.wikipedia.org/wiki/Doughnut",
    "http://blog.servo.org/2015/05/28/twis-33/",
    "http://broscience.com/",
    "http://cnn.com",
