@@ -561,6 +561,11 @@ browser_set(ECef_Client *ec, Browser *b)
         elm_object_part_content_set(ec->layout, "ecef.swallow.browser", b->img);
         dialer_unuse(ec);
      }
+   if (ec->tooltip_visible)
+     {
+        elm_object_tooltip_unset(ec->layout);
+        ec->tooltip_visible = 0;
+     }
    elm_layout_signal_emit(ec->layout, "ecef,pages,available", "ecef");
    evas_object_size_hint_aspect_set(b->img, EVAS_ASPECT_CONTROL_NONE, -1, -1);
    browser_window_title_update(ec);

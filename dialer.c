@@ -206,6 +206,11 @@ dialer_use(ECef_Client *ec)
    Elm_Object_Item *it;
 
    if (ec->dialing) return;
+   if (ec->tooltip_visible)
+     {
+        elm_object_tooltip_unset(ec->layout);
+        ec->tooltip_visible = 0;
+     }
    elm_entry_entry_set(ec->urlbar, NULL);
    elm_object_part_content_set(ec->layout, "ecef.swallow.dialer", ec->dialer);
    elm_layout_signal_emit(ec->layout, "ecef,dialer,activate", "ecef");
