@@ -745,5 +745,4 @@ IC("back", "back.png", 16, 0);
 IC("forward", "forward.png", 16, 0);
 IC("reload", "reload.png", 16, 0);
 IC("doge", "doge.png", 16, 0);
-IC("servomeme", "servomeme.jpg", 16, 0);
 }

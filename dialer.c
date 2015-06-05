@@ -4,7 +4,6 @@
 static const char *dialers[] =
 {
    "http://en.wikipedia.org/wiki/Doughnut",
-   "http://blog.servo.org/2015/05/28/twis-33/",
    "http://broscience.com/",
    "http://cnn.com",
    "http://www.goldsgym.com/",
@@ -178,18 +177,19 @@ void
 dialer_populate(ECef_Client *ec)
 {
    unsigned int i;
+   Evas_Object *o;
 
    ec->dialer = elm_gengrid_add(ec->win);
    elm_object_focus_allow_set(ec->dialer, 0);
    dialer_resize(ec);
    evas_object_event_callback_add(ec->win, EVAS_CALLBACK_RESIZE, (Evas_Object_Event_Cb)dialer_win_resize, ec);
    elm_object_style_set(ec->dialer, "dialer");
-   if (servo)
-     {
-        Evas_Object *o = elm_bg_add(ec->dialer);
-        elm_bg_file_set(o, "./ecef.edj", "elm/icon/servomeme/default");
+        o = elm_bg_add(ec->dialer);
+        if (servo)
+          elm_bg_file_set(o, "servomeme.jpg", NULL);
+        else
+          elm_bg_file_set(o, "donut.gif", NULL);
         elm_object_part_content_set(ec->dialer, "elm.swallow.background", o);
-     }
    elm_scroller_bounce_set(ec->dialer, 0, 0);
    elm_scroller_policy_set(ec->dialer, ELM_SCROLLER_POLICY_AUTO, ELM_SCROLLER_POLICY_AUTO);
    evas_object_smart_callback_add(ec->dialer, "unrealized", (Evas_Smart_Cb)dialer_unrealized, ec);
