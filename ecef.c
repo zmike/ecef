@@ -279,7 +279,8 @@ main(int argc, char *argv[])
    elm_init(argc, (char**)argv);
    elm_theme_overlay_add(NULL, "./ecef.edj");
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
-   elm_config_accel_preference_set("opengl:depth24:stencil8");
+   if (servo || eina_streq(getenv("ELM_ACCEL"), "gl"))
+     elm_config_accel_preference_set("opengl:depth24:stencil8");
    win = elm_win_util_standard_add("ecef", "Loading");
    evas_object_resize(win, 640, 480);
    elm_win_autodel_set(win, 1);
