@@ -588,6 +588,7 @@ browser_set(ECef_Client *ec, Browser *b)
    //host->set_focus(host, 1);
    if (b->swapping)
      elm_object_signal_emit(ec->layout, "ecef,browser,swap", "ecef");
+   browser_resize(ec);
    if (!windowed) return;
    edje_object_part_geometry_get(elm_layout_edje_get(ec->layout), "ecef.sizer.browser", &x, &y, &w, &h);
    ecore_x_window_move(host->get_window_handle(host), x, y);
