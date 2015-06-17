@@ -270,7 +270,6 @@ main(int argc, char *argv[])
    ec->browsers = eina_hash_int32_new(NULL);
    ec->browser_settings = &browser_settings;
    ec->window_info = &window_info;
-   ec->favicons = eina_hash_string_superfast_new((Eina_Free_Cb)evas_object_del);
 
    servo = !!dlsym(NULL, "servo_test");
    if ((!windowed) && servo)
@@ -279,6 +278,7 @@ main(int argc, char *argv[])
    elm_init(argc, (char**)argv);
    elm_theme_overlay_add(NULL, "./ecef.edj");
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
+   cache_init();
    if (servo || eina_streq(getenv("ELM_ACCEL"), "gl"))
      elm_config_accel_preference_set("opengl:depth24:stencil8");
    win = elm_win_util_standard_add("ecef", "Loading");

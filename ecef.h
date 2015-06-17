@@ -298,6 +298,7 @@ typedef struct Browser
    Eina_Stringshare *url;
    Eina_Stringshare *favicon;
    Elm_Object_Item *it;
+   Evas_Object *it_favicon;
    Evas_Object *it_clone; //pagelist clone
    GLuint program;
    GLuint vao;
@@ -334,7 +335,6 @@ typedef struct ECef_Client
    Evas_Object *dialer;
    Browser *current_page;
    Eina_Hash *browsers;
-   Eina_Hash *favicons;
    Eina_Inlist *focus_stack;
    Eina_List *pending_pages;
    Eina_List *create_cbs;
@@ -421,6 +421,10 @@ void dialer_populate(ECef_Client *ec);
 void dialer_use(ECef_Client *ec);
 void dialer_unuse(ECef_Client *ec);
 void dialer_activate_num(ECef_Client *ec, unsigned int n);
+
+void cache_init(void);
+Eina_Bool cache_favicon_set(Evas_Object *img, const char *favicon);
+void cache_favicon_add(Evas_Object *img, const char *favicon);
 
 # define E_LIST_HANDLER_APPEND(list, type, callback, data) \
   do \

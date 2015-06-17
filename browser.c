@@ -1,6 +1,74 @@
 #include "ecef.h"
 #include <Ecore_X.h>
 
+static const char *FAVICON_DATA = "woooo data";
+
+static Eina_List *favicon_handlers;
+static Eina_File *favicon_update_file;
+
+typedef struct Favicon_Data
+{
+   const char *FAVICON_DATA;
+   Eina_Binbuf *buf;
+} Favicon_Data;
+
+static Eina_Bool
+browser_favicon_url_data(void *d, int t EINA_UNUSED, Ecore_Con_Event_Url_Data *ev)
+{
+   void **fd = ecore_con_url_data_get(ev->url_con);
+   Favicon_Data *fda = ecore_con_url_data_get(ev->url_con);
+   if (d != *fd) return ECORE_CALLBACK_RENEW;
+   eina_binbuf_append_length(fda->buf, ev->data, ev->size);
+   return ECORE_CALLBACK_CANCEL;
+}
+
+static Eina_Bool
+browser_favicon_url_complete(void *d, int t EINA_UNUSED, Ecore_Con_Event_Url_Complete *ev)
+{
+   void **fd = ecore_con_url_data_get(ev->url_con);
+   Favicon_Data *fda = ecore_con_url_data_get(ev->url_con);
+   Eina_List *l;
+   ECef_Client *ec;
+   Evas_Object *img;
+   Eina_File *f;
+   Eina_Stringshare *url;
+
+   if (d != *fd) return ECORE_CALLBACK_RENEW;
+   url = ecore_con_url_url_get(ev->url_con);
+   ec = eina_list_data_get(clients);
+   f = eina_file_virtualize(url,
+                            eina_binbuf_string_get(fda->buf),
+                            eina_binbuf_length_get(fda->buf),
+                            EINA_FALSE);
+   favicon_update_file = f;
+   img = evas_object_image_filled_add(evas_object_evas_get(ec->win));
+   evas_object_image_mmap_set(img, f, NULL);
+   cache_favicon_add(img, url);
+   evas_object_del(img);
+   EINA_LIST_FOREACH(clients, l, ec)
+     {
+        Eina_Iterator *it;
+        Browser *b;
+
+        it = eina_hash_iterator_data_new(ec->browsers);
+        EINA_ITERATOR_FOREACH(it, b)
+          {
+             if (b->url != url) continue;
+             elm_gengrid_item_update(b->it);
+             if (ec->current_page == b)
+               cache_favicon_set(ec->favicon, url);
+          }
+        eina_iterator_free(it);
+     }
+   favicon_update_file = NULL;
+   eina_file_close(f);
+   if (eina_binbuf_string_steal(fda->buf));
+   eina_binbuf_free(fda->buf);
+   free(fda);
+   ecore_con_url_free(ev->url_con);
+   return ECORE_CALLBACK_CANCEL;
+}
+
 static void
 browser_resize(ECef_Client *ec, ...)
 {
@@ -52,23 +120,26 @@ browser_page_del(Browser *b, Evas_Object *obj EINA_UNUSED)
    free(b);
 }
 
-static Evas_Object *
+Evas_Object *
 browser_page_content_get(Browser *b, Evas_Object *obj, const char *part)
 {
-   Evas_Object *ic, *img;
-   const Eina_File *f;
+   Evas_Object *ic;
 
    if (!b) return NULL;
    if (eina_streq(part, "ecef.swallow.view"))
      return b->it_clone = render_image_clone(b, obj);
 
    if (!b->favicon) return NULL;
-   img = eina_hash_find(browser_get_client(b->browser)->favicons, b->favicon);
-   if (!img) return NULL; //FIXME: wat?
-   evas_object_image_mmap_get(elm_image_object_get(img), &f, NULL);
+   b->it_favicon = NULL;
    ic = elm_image_add(obj);
-   elm_image_mmap_set(ic, f, NULL);
-   return ic;
+   if (favicon_update_file && (b->url == eina_file_filename_get(favicon_update_file)))
+     {
+        elm_image_mmap_set(ic, favicon_update_file, NULL);
+        return b->it_favicon = ic;
+     }
+   if (cache_favicon_set(ic, b->favicon)) return b->it_favicon = ic;
+   evas_object_del(ic);
+   return NULL;
 }
 
 static void
@@ -426,6 +497,10 @@ browser_new(ECef_Client *ec, const char *url, Eina_Bool pending, Browser_Created
    ec->create_datas = eina_list_append(ec->create_datas, data);
    cef_browser_host_create_browser(ec->window_info, &ec->client, &u, ec->browser_settings, NULL);
    cef_string_clear(&u);
+
+   if (favicon_handlers) return;
+   E_LIST_HANDLER_APPEND(favicon_handlers, ECORE_CON_EVENT_URL_DATA, browser_favicon_url_data, FAVICON_DATA);
+   E_LIST_HANDLER_APPEND(favicon_handlers, ECORE_CON_EVENT_URL_COMPLETE, browser_favicon_url_complete, FAVICON_DATA);
 }
 
 void
@@ -570,19 +645,7 @@ browser_set(ECef_Client *ec, Browser *b)
    evas_object_size_hint_aspect_set(b->img, EVAS_ASPECT_CONTROL_NONE, -1, -1);
    browser_window_title_update(ec);
    elm_entry_entry_set(ec->urlbar, b->url);
-   if (b->favicon)
-     {
-        Evas_Object *img;
-
-        img = eina_hash_find(ec->favicons, b->favicon);
-        if (img)
-          {
-             const Eina_File *f;
-
-             evas_object_image_mmap_get(elm_image_object_get(img), &f, NULL);
-             elm_image_mmap_set(ec->favicon, f, NULL);
-          }
-     }
+   cache_favicon_set(ec->favicon, b->favicon);
    host = browser_get_host(ec->current_page->browser);
    ec->focus_stack = eina_inlist_promote(ec->focus_stack, EINA_INLIST_GET(b));
    //host->set_focus(host, 1);
@@ -628,49 +691,32 @@ browser_swap(ECef_Client *ec, Browser *b, Evas_Object *clone)
    browser_set(ec, b);
 }
 
-static void
-browser_favicon_downloaded(Browser *b, Evas_Object *obj, void *event_info EINA_UNUSED)
-{
-   ECef_Client *ec;
-   const Eina_File *f;
-
-   ec = browser_get_client(b->browser);
-   evas_object_image_mmap_get(elm_image_object_get(obj), &f, NULL);
-   eina_hash_set(ec->favicons, b->favicon, obj);
-   if (f && (ec->current_page == b))
-     elm_image_mmap_set(ec->favicon, f, NULL);
-   elm_gengrid_item_update(b->it);
-   //evas_object_del(obj); this borks the eina file somehow :/
-}
-
 void
 browser_favicon_set(ECef_Client *ec, Browser *b, const char *favicon)
 {
-   Eina_File *f;
-
    if (!eina_stringshare_replace(&b->favicon, favicon)) return;
-   f = eina_hash_find(ec->favicons, favicon);
-   if (f)
-     elm_gengrid_item_update(b->it);
-   else
+   elm_gengrid_item_update(b->it);
+   if (b->it_favicon && (ec->current_page == b))
+     cache_favicon_set(ec->favicon, b->favicon);
+   else if (!b->it_favicon)
      {
-        Evas_Object *ic;
+        Ecore_Con_Url *url;
+        Favicon_Data *fd;
 
-        ic = elm_image_add(ec->win);
-        evas_object_smart_callback_add(ic, "download,done", (Evas_Smart_Cb)browser_favicon_downloaded, b);
-        elm_image_file_set(ic, favicon, NULL);
+        url = ecore_con_url_new(favicon);
+        fd = malloc(sizeof(Favicon_Data));
+        fd->FAVICON_DATA = FAVICON_DATA;
+        fd->buf = eina_binbuf_new();
+        ecore_con_url_data_set(url, fd);
+        ecore_con_url_get(url);
      }
-   if (f && (ec->current_page == b))
-     elm_image_mmap_set(ec->favicon, f, NULL);
 }
 
 Evas_Object *
 browser_tooltip_cb(Browser *b, Evas_Object *obj, Evas_Object *tooltip, Elm_Object_Item *it)
 {
    Evas_Object *ly, *r;
-   ECef_Client *ec;
 
-   ec = browser_get_client(b->browser);
    ly = elm_layout_add(tooltip);
    elm_layout_theme_set(ly, "layout", "ecef", "page_tooltip");
    elm_object_part_content_set(ly, "ecef.swallow.view", render_image_clone(b, tooltip));
@@ -682,19 +728,11 @@ browser_tooltip_cb(Browser *b, Evas_Object *obj, Evas_Object *tooltip, Elm_Objec
 
    if (b->favicon)
      {
-        Evas_Object *img;
-        const Eina_File *f;
+        Evas_Object *ic;
 
-        img = eina_hash_find(ec->favicons, b->favicon);
-        if (img)
-          {
-             Evas_Object *ic;
-
-             evas_object_image_mmap_get(elm_image_object_get(img), &f, NULL);
-             ic = elm_image_add(tooltip);
-             elm_image_mmap_set(ic, f, NULL);
-             elm_object_part_content_set(ly, "ecef.swallow.favicon", ic);
-          }
+        ic = elm_image_add(tooltip);
+        cache_favicon_set(ic, b->favicon);
+        elm_object_part_content_set(ly, "ecef.swallow.favicon", ic);
      }
 
    return ly;
