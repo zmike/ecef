@@ -41,32 +41,13 @@ dialer_item_del(Browser *b, Evas_Object *obj EINA_UNUSED)
    free(b);
 }
 
-static Evas_Object *
-dialer_item_content_get(Browser *b, Evas_Object *obj, const char *part)
-{
-   Evas_Object *ic, *img;
-   const Eina_File *f;
-
-   if (!b) return NULL;
-   if (eina_streq(part, "ecef.swallow.view"))
-     return b->it_clone = render_image_clone(b, obj);
-
-   if (!b->favicon) return NULL;
-   img = eina_hash_find(browser_get_client(b->browser)->favicons, b->favicon);
-   if (!img) return NULL; //FIXME: wat?
-   evas_object_image_mmap_get(elm_image_object_get(img), &f, NULL);
-   ic = elm_image_add(obj);
-   elm_image_mmap_set(ic, f, NULL);
-   return ic;
-}
-
 static void
 dialer_browser_cb(void *d EINA_UNUSED, Browser *b)
 {
    static Elm_Gengrid_Item_Class dialer_itc = {
       .item_style = "default",
       .func = {
-           .content_get = (Elm_Gengrid_Item_Content_Get_Cb)dialer_item_content_get,
+           .content_get = (Elm_Gengrid_Item_Content_Get_Cb)browser_page_content_get,
            .text_get = (Elm_Gengrid_Item_Text_Get_Cb)dialer_item_text_get,
            .del = (Elm_Gengrid_Item_Del_Cb)dialer_item_del
       },
