@@ -128,14 +128,14 @@ collections {
                rel2.relative: 0 1;
                rel1.offset: 8 3;
                rel1.to_x: "ecef.swallow.forward";
-               rel.to_y: "ecef.swallow.favicon";
+               rel.to_y: "ecef.swallow.urlbar";
             }
          }
          swallow { "ecef.swallow.favicon";
-            desc { align: 0 0;
+            desc { align: 0 0; min: 16 16;
                rel1.relative: 1 0;
                rel2.relative: 0 1;
-               rel1.offset: 8 0;
+               rel1.offset: 8 2;
                aspect: 1 1; aspect_preference: SOURCE;
                rel1.to_x: "ecef.swallow.reload";
                rel.to_y: "ecef.swallow.urlbar";
