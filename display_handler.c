@@ -126,31 +126,24 @@ on_favicon_urlchange(cef_display_handler_t *self EINA_UNUSED, cef_browser_t *bro
    size_t i, count;
    ECef_Client *ec;
    Browser *b;
-   Eina_Stringshare *icon = NULL;
 
    if (!icon_urls) return; //FIXME: unset favicons?
    ec = browser_get_client(browser);
    b = browser_get(ec, browser);
    count = cef_string_list_size(icon_urls);
-   /* prefer png -> anything but .ico -> .ico */
-   for (i = 0; i < count; i++)
+   /* use last-listed favicon first: spec compliance */
+   for (i = count - 1; i < count; i--)
      {
         cef_string_t val = {0};
         cef_string_utf8_t u8 = {0};
 
         if (!cef_string_list_value(icon_urls, i, &val)) continue;
         cef_string_to_utf8(val.str, val.length, &u8);
-        if (eina_str_has_extension(u8.str, ".png"))
-          eina_stringshare_replace(&icon, u8.str);
-        else if (((!icon) || eina_str_has_extension(icon, ".ico")) && (!eina_str_has_extension(u8.str, ".ico")))
-          eina_stringshare_replace(&icon, u8.str);
-        else if (!icon)
-          eina_stringshare_replace(&icon, u8.str);
+        browser_favicon_set(ec, b, u8.str);
         cef_string_utf8_clear(&u8);
         cef_string_clear(&val);
+        break;
      }
-   browser_favicon_set(ec, b, icon);
-   eina_stringshare_del(icon);
 }
 
 static void
