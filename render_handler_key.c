@@ -1,6 +1,7 @@
 #include "ecef.h"
 #define XK_3270  // for XK_3270_BackTab
 #include <Evas.h>
+#include <Ecore_X.h>
 #include <X11/keysym.h>
 #include <X11/XF86keysym.h>
 
@@ -545,7 +546,7 @@ KeyboardCode GdkEventToWindowsKeyCode(const Evas_Event_Key_Down* event) {
   // key and a caps-lock key, GTK doesn't swap their
   // |event->hardware_keycode| values but swap their |event->keyval| values.
   KeyboardCode windows_key_code =
-      KeyboardCodeFromXKeysym(event->keysym);
+      KeyboardCodeFromXKeysym(ecore_x_keysym_get(event->key));
   if (windows_key_code)
     return windows_key_code;
 
@@ -557,7 +558,7 @@ KeyboardCode GdkEventToWindowsKeyCode(const Evas_Event_Key_Down* event) {
 
   // This key is one that keyboard-layout drivers cannot change.
   // Use |event->keyval| to retrieve its |windows_key_code| value.
-  return KeyboardCodeFromXKeysym(event->keysym);
+  return KeyboardCodeFromXKeysym(ecore_x_keysym_get(event->key));
 }
 
 // From content/browser/renderer_host/input/web_input_event_util_posix.cc.

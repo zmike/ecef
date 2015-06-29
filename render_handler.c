@@ -263,7 +263,7 @@ render_image_key(ECef_Client *ec, Evas *e, Evas_Object *obj, Evas_Event_Key_Down
    event.native_key_code = ev->keycode;
    event.modifiers = modifiers_get(ev->modifiers);
    /* ecore, y u no have keycode defines??? */
-   if ((ev->keysym >= 0xff80 /* space */) && (ev->keysym <= 0xffb9 /* kp_9 */))
+   if ((ecore_x_keysym_get(ev->key) >= 0xff80 /* space */) && (ecore_x_keysym_get(ev->key) <= 0xffb9 /* kp_9 */))
      event.modifiers |= EVENTFLAG_IS_KEY_PAD;
    if (event.modifiers & EVENTFLAG_ALT_DOWN)
      event.is_system_key = 1;
