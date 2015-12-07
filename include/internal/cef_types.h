@@ -32,7 +32,7 @@
 #define CEF_INCLUDE_INTERNAL_CEF_TYPES_H_
 #pragma once
 
-#include "include/base/cef_build.h"
+#include "include/base/cef_basictypes.h"
 #include "include/internal/cef_string.h"
 #include "include/internal/cef_string_list.h"
 #include "include/internal/cef_time.h"
@@ -44,45 +44,6 @@
 #include "include/internal/cef_types_mac.h"
 #elif defined(OS_LINUX)
 #include "include/internal/cef_types_linux.h"
-#endif
-
-#include <limits.h>         // For UINT_MAX
-#include <stddef.h>         // For size_t
-
-// The NSPR system headers define 64-bit as |long| when possible, except on
-// Mac OS X.  In order to not have typedef mismatches, we do the same on LP64.
-//
-// On Mac OS X, |long long| is used for 64-bit types for compatibility with
-// <inttypes.h> format macros even in the LP64 model.
-#if defined(__LP64__) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
-typedef long                int64;  // NOLINT(runtime/int)
-typedef unsigned long       uint64;  // NOLINT(runtime/int)
-#else
-typedef long long           int64;  // NOLINT(runtime/int)
-typedef unsigned long long  uint64;  // NOLINT(runtime/int)
-#endif
-
-// TODO: Remove these type guards.  These are to avoid conflicts with
-// obsolete/protypes.h in the Gecko SDK.
-#ifndef _INT32
-#define _INT32
-typedef int                 int32;
-#endif
-
-// TODO: Remove these type guards.  These are to avoid conflicts with
-// obsolete/protypes.h in the Gecko SDK.
-#ifndef _UINT32
-#define _UINT32
-typedef unsigned int       uint32;
-#endif
-
-// UTF-16 character type
-#ifndef char16
-#if defined(WIN32)
-typedef wchar_t             char16;
-#else
-typedef unsigned short      char16;
-#endif
 #endif
 
 // 32-bit ARGB color value, not premultiplied. The color components are always
@@ -482,7 +443,8 @@ typedef struct _cef_browser_settings_t {
   // The maximum rate in frames per second (fps) that CefRenderHandler::OnPaint
   // will be called for a windowless browser. The actual fps may be lower if
   // the browser cannot generate frames at the requested rate. The minimum
-  // value is 1 and the maximum value is 60 (default 30).
+  // value is 1 and the maximum value is 60 (default 30). This value can also be
+  // changed dynamically via CefBrowserHost::SetWindowlessFrameRate.
   ///
   int windowless_frame_rate;
 
@@ -1268,6 +1230,21 @@ typedef struct _cef_size_t {
   int width;
   int height;
 } cef_size_t;
+
+///
+// Structure representing a draggable region.
+///
+typedef struct _cef_draggable_region_t {
+  ///
+  // Bounds of the region.
+  ///
+  cef_rect_t bounds;
+
+  ///
+  // True (1) this this region is draggable and false (0) otherwise.
+  ///
+  int draggable;
+} cef_draggable_region_t;
 
 ///
 // Existing process IDs.
@@ -2118,6 +2095,156 @@ typedef enum {
   ///
   UU_REPLACE_PLUS_WITH_SPACE = 16,
 } cef_uri_unescape_rule_t;
+
+///
+// Options that can be passed to CefParseJSON.
+///
+typedef enum {
+  ///
+  // Parses the input strictly according to RFC 4627. See comments in Chromium's
+  // base/json/json_reader.h file for known limitations/deviations from the RFC.
+  ///
+  JSON_PARSER_RFC = 0,
+
+  ///
+  // Allows commas to exist after the last element in structures.
+  ///
+  JSON_PARSER_ALLOW_TRAILING_COMMAS = 1 << 0,
+} cef_json_parser_options_t;
+
+///
+// Error codes that can be returned from CefParseJSONAndReturnError.
+///
+typedef enum {
+  JSON_NO_ERROR = 0,
+  JSON_INVALID_ESCAPE,
+  JSON_SYNTAX_ERROR,
+  JSON_UNEXPECTED_TOKEN,
+  JSON_TRAILING_COMMA,
+  JSON_TOO_MUCH_NESTING,
+  JSON_UNEXPECTED_DATA_AFTER_ROOT,
+  JSON_UNSUPPORTED_ENCODING,
+  JSON_UNQUOTED_DICTIONARY_KEY,
+  JSON_PARSE_ERROR_COUNT
+} cef_json_parser_error_t;
+
+///
+// Options that can be passed to CefWriteJSON.
+///
+typedef enum {
+  ///
+  // Default behavior.
+  ///
+  JSON_WRITER_DEFAULT = 0,
+
+  ///
+  // This option instructs the writer that if a Binary value is encountered,
+  // the value (and key if within a dictionary) will be omitted from the
+  // output, and success will be returned. Otherwise, if a binary value is
+  // encountered, failure will be returned.
+  ///
+  JSON_WRITER_OMIT_BINARY_VALUES = 1 << 0,
+
+  ///
+  // This option instructs the writer to write doubles that have no fractional
+  // part as a normal integer (i.e., without using exponential notation
+  // or appending a '.0') as long as the value is within the range of a
+  // 64-bit int.
+  ///
+  JSON_WRITER_OMIT_DOUBLE_TYPE_PRESERVATION = 1 << 1,
+
+  ///
+  // Return a slightly nicer formatted json string (pads with whitespace to
+  // help with readability).
+  ///
+  JSON_WRITER_PRETTY_PRINT = 1 << 2,
+} cef_json_writer_options_t;
+
+///
+// Margin type for PDF printing.
+///
+typedef enum {
+  ///
+  // Default margins.
+  ///
+  PDF_PRINT_MARGIN_DEFAULT,
+
+  ///
+  // No margins.
+  ///
+  PDF_PRINT_MARGIN_NONE,
+
+  ///
+  // Minimum margins.
+  ///
+  PDF_PRINT_MARGIN_MINIMUM,
+
+  ///
+  // Custom margins using the |margin_*| values from cef_pdf_print_settings_t.
+  ///
+  PDF_PRINT_MARGIN_CUSTOM,
+} cef_pdf_print_margin_type_t;
+
+///
+// Structure representing PDF print settings.
+///
+typedef struct _cef_pdf_print_settings_t {
+  ///
+  // Page title to display in the header. Only used if |header_footer_enabled|
+  // is set to true (1).
+  ///
+  cef_string_t header_footer_title;
+
+  ///
+  // URL to display in the footer. Only used if |header_footer_enabled| is set
+  // to true (1).
+  ///
+  cef_string_t header_footer_url;
+
+  ///
+  // Output page size in microns. If either of these values is less than or
+  // equal to zero then the default paper size (A4) will be used.
+  ///
+  int page_width;
+  int page_height;
+
+  ///
+  // Margins in millimeters. Only used if |margin_type| is set to
+  // PDF_PRINT_MARGIN_CUSTOM.
+  ///
+  double margin_top;
+  double margin_right;
+  double margin_bottom;
+  double margin_left;
+
+  ///
+  // Margin type.
+  ///
+  cef_pdf_print_margin_type_t margin_type;
+
+  ///
+  // Set to true (1) to print headers and footers or false (0) to not print
+  // headers and footers.
+  ///
+  int header_footer_enabled;
+
+  ///
+  // Set to true (1) to print the selection only or false (0) to print all.
+  ///
+  int selection_only;
+
+  ///
+  // Set to true (1) for landscape mode or false (0) for portrait mode.
+  ///
+  int landscape;
+
+  ///
+  // Set to true (1) to print background graphics or false (0) to not print
+  // background graphics.
+  ///
+  int backgrounds_enabled;
+
+} cef_pdf_print_settings_t;
 
 #ifdef __cplusplus
 }
