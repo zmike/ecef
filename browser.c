@@ -695,7 +695,8 @@ void
 browser_favicon_set(ECef_Client *ec, Browser *b, const char *favicon)
 {
    if (!eina_stringshare_replace(&b->favicon, favicon)) return;
-   elm_gengrid_item_update(b->it);
+   if (b->it)
+     elm_gengrid_item_update(b->it);
    if (b->it_favicon && (ec->current_page == b))
      cache_favicon_set(ec->favicon, b->favicon);
    else if (!b->it_favicon)
