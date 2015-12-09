@@ -9,7 +9,7 @@ on_error(Evas_GL_API *api, const char *func, int line)
    if (_e)
      {
         fprintf(stderr, "%s:%d: GL error 0x%04x\n", func, line, _e);
-        abort();
+        //abort();
      }
    return;
 }
