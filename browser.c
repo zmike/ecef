@@ -404,6 +404,7 @@ page_swapped(void *d, Evas_Object *obj EINA_UNUSED, const char *sig EINA_UNUSED,
    else
      evas_object_del(img);
    elm_object_part_content_set(ec->layout, "ecef.swallow.browser", ec->current_page->img);
+   browser_window_title_update(ec);
 }
 
 void
