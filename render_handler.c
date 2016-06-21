@@ -1,4 +1,3 @@
-#define EFL_EO_API_SUPPORT
 #include "ecef.h"
 #include <Ecore_X.h>
 
@@ -93,9 +92,9 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
           }
         if (first || (b->w != b->pw) || (b->h != b->ph))
           {
-             eo_do(img, elm_obj_image_sizing_eval());
+             elm_image_sizing_eval(img);
              EINA_LIST_FOREACH(b->clones, l, o)
-               eo_do(img, elm_obj_image_sizing_eval());
+               elm_image_sizing_eval(o);
           }
      }
    EINA_LIST_FOREACH(b->clones, l, o)
