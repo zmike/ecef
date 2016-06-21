@@ -1,0 +1,4 @@
+* install efl (https://git.enlightenment.org/core/efl.git)
+* copy libembedding.so from servo/target/(debug|release)/ to ./libcef.so
+* run ./build.sh
+* LD_LIBRARY_PATH=./ ELM_ACCEL=gl ./ecef
