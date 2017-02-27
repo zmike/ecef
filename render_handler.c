@@ -92,9 +92,9 @@ paint(cef_render_handler_t *self, cef_browser_t *browser, cef_paint_element_type
           }
         if (first || (b->w != b->pw) || (b->h != b->ph))
           {
-             elm_image_sizing_eval(img);
+             elm_image_smooth_set(img, 0);
              EINA_LIST_FOREACH(b->clones, l, o)
-               elm_image_sizing_eval(o);
+               elm_image_smooth_set(o, 0);
           }
      }
    EINA_LIST_FOREACH(b->clones, l, o)

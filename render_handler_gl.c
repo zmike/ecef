@@ -34,27 +34,29 @@ static float rectangle_fullscreen_vertices[] =
    -1.0, -1.0,  0.0
 };
 
-static const char vertex_texture[] =
-      "attribute vec4 vPosition;\n"
-      "attribute vec2 vTexCoord;\n"
-      "uniform mat4 mvpMatrix;"
-      "varying vec2 texcoord;\n"
-      "void main()\n"
-      "{\n"
-      "   gl_Position = mvpMatrix * vPosition;\n"
-      "   texcoord = vTexCoord;\n"
-      "}\n";
+static const char *frag_shader = \
+"#version 300 es\n" \
+"precision mediump float;\n" \
+"in vec2 Texcoord;\n" \
+"out vec4 fragColor;\n" \
+"uniform sampler2D tex;\n" \
+"void main() {\n" \
+"  fragColor = texture2D(tex, Texcoord);\n" \
+"  if (fragColor.a < 0.1)\n" \
+"  {\n" \
+"    discard;\n" \
+"  }\n" \
+"}";
 
-static const char fragment_texture[] =
-      "#ifdef GL_ES\n"
-      "precision mediump float;\n"
-      "#endif\n"
-      "uniform sampler2D tex;\n"
-      "varying vec2 texcoord;\n"
-      "void main()\n"
-      "{\n"
-      "   gl_FragColor = texture2D(tex, texcoord);\n"
-      "}\n";
+static const char *vert_shader = \
+"#version 300 es\n" \
+"in vec2 position;\n" \
+"out vec2 Texcoord;\n" \
+"void main() {\n" \
+"  Texcoord = (vec2(position.x + 1.0f, position.y - 1.0f) * 0.5);\n" \
+"  Texcoord.y *= -1.0f;\n" \
+"  gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);\n" \
+"}";
 
 
 static GLuint
@@ -134,8 +136,8 @@ render_image_gl_init(Evas_Object *obj)
    b->glcfg->depth_bits = EVAS_GL_DEPTH_BIT_24;
    b->glcfg->stencil_bits = EVAS_GL_STENCIL_BIT_8;
 
-   vertexShader = shader_compile(api, GL_VERTEX_SHADER, vertex_texture);
-   fragmentShader = shader_compile(api, GL_FRAGMENT_SHADER, fragment_texture);
+   vertexShader = shader_compile(api, GL_VERTEX_SHADER, vert_shader);
+   fragmentShader = shader_compile(api, GL_FRAGMENT_SHADER, frag_shader);
    api->glClearColor(0.0, 0.0, 0.0, 0.0);GLERR;
 
    b->program = program = api->glCreateProgram();GLERR;
